@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@font-face {
+    font-family: 'vamos'; 
+    src: url('/vamos.otf') format('opentype');
+  }
+  @font-face {
+    font-family: 'alegreya';
+    src: url('/alegreya.ttf') format('truetype');
+  }
+
+.vamos {
+    font-family: 'vamos', sans-serif; 
+  }
+
+.alegreya{
+    font-family: 'alegreya', sans-serif;
+}
+
