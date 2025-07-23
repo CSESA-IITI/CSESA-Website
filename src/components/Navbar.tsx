@@ -1,10 +1,28 @@
-import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+
+// Animation variants for the rolling text effect
+const letterVariants = {
+  initial: { y: 0 },
+  spin: (i) => ({
+    y: "-120%",
+    transition: { duration: 0.3, ease: "easeInOut", delay: i * 0.03 },
+  }),
+};
+
+const letterVariants2 = {
+  initial: { y: "120%" },
+  spin: (i) => ({
+    y: 0,
+    transition: { duration: 0.3, ease: "easeInOut", delay: i * 0.03 },
+  }),
+};
 
 const FuturisticNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("Home");
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -13,6 +31,7 @@ const FuturisticNavbar = () => {
     { name: "Team", href: "/team" },
     { name: "Projects", href: "/projects" },
     { name: "Contact", href: "/contact" },
+    { name: "Login", href: "/login" },
   ];
 
   return (
@@ -30,15 +49,8 @@ const FuturisticNavbar = () => {
           {/* Animated Glow Effect */}
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-blue-500/20 rounded-2xl opacity-0"
-            animate={{
-              opacity: [0, 0.3, 0],
-              scale: [1, 1.02, 1],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+            animate={{ opacity: [0, 0.3, 0], scale: [1, 1.02, 1] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           />
 
           {/* Main Navbar Content */}
@@ -49,7 +61,7 @@ const FuturisticNavbar = () => {
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <span className="text-white font-bold text-xl tracking-6 vamos">
+              <span className="text-white font-bold text-xl tracking-wider vamos">
                 CSESA
               </span>
             </motion.div>
@@ -59,14 +71,14 @@ const FuturisticNavbar = () => {
               {navItems.map((item, index) => (
                 <Link key={item.name} to={item.href}>
                   <motion.button
-                    key={item.name}
-                    className={`relative px-6 py-3 rounded-xl font-medium transition-all duration-300 text-sm ${
+                    className={`relative alegreya-sans-sc-regular px-5 py-2 rounded-xl font-medium transition-colors duration-300 text-sm h-10 flex items-center justify-center ${
                       activeItem === item.name
                         ? "text-white"
-                        : "text-gray-300 hover:text-white"
+                        : "text-gray-300"
                     }`}
                     onClick={() => setActiveItem(item.name)}
-                    whileHover={{ scale: 1.05 }}
+                    onMouseEnter={() => setHoveredItem(item.name)}
+                    onMouseLeave={() => setHoveredItem(null)}
                     whileTap={{ scale: 0.95 }}
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -76,52 +88,79 @@ const FuturisticNavbar = () => {
                       <motion.div
                         className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl backdrop-blur-sm border border-indigo-400/30"
                         layoutId="activeTab"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
                         transition={{
                           type: "spring",
-                          stiffness: 300,
+                          stiffness: 350,
                           damping: 30,
                         }}
                       />
                     )}
-                    <span className="relative z-10">{item.name}</span>
+
+                    {/* Container for the animated text */}
+                    <div className="relative z-10 h-5 overflow-hidden">
+                      {/* Initial text that rolls out */}
+                      <motion.div
+                        className="flex"
+                        initial="initial"
+                        animate={hoveredItem === item.name ? "spin" : "initial"}
+                      >
+                        {item.name.split("").map((char, i) => (
+                          <motion.span
+                            key={i}
+                            custom={i}
+                            variants={letterVariants}
+                            className="inline-block whitespace-pre"
+                          >
+                            {char}
+                          </motion.span>
+                        ))}
+                      </motion.div>
+                      {/* Text that rolls in */}
+                      <motion.div
+                        className="absolute top-0 left-0 flex"
+                        initial="initial"
+                        animate={hoveredItem === item.name ? "spin" : "initial"}
+                      >
+                        {item.name.split("").map((char, i) => (
+                          <motion.span
+                            key={i}
+                            custom={i}
+                            variants={letterVariants2}
+                            className="inline-block whitespace-pre text-white"
+                          >
+                            {char}
+                          </motion.span>
+                        ))}
+                      </motion.div>
+                    </div>
                   </motion.button>
                 </Link>
               ))}
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button (No changes) */}
             <motion.button
-              className="md:hidden w-10 h-10 flex flex-col items-center justify-center space-y-1"
+              className="md:hidden w-10 h-10 flex flex-col items-center justify-center space-y-1 z-20"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               whileTap={{ scale: 0.9 }}
             >
               <motion.span
                 className="w-6 h-0.5 bg-white block transition-all duration-300"
-                animate={{
-                  rotate: isMenuOpen ? 45 : 0,
-                  y: isMenuOpen ? 6 : 0,
-                }}
+                animate={{ rotate: isMenuOpen ? 45 : 0, y: isMenuOpen ? 6 : 0 }}
               />
               <motion.span
                 className="w-6 h-0.5 bg-white block transition-all duration-300"
-                animate={{
-                  opacity: isMenuOpen ? 0 : 1,
-                }}
+                animate={{ opacity: isMenuOpen ? 0 : 1 }}
               />
               <motion.span
                 className="w-6 h-0.5 bg-white block transition-all duration-300"
-                animate={{
-                  rotate: isMenuOpen ? -45 : 0,
-                  y: isMenuOpen ? -6 : 0,
-                }}
+                animate={{ rotate: isMenuOpen ? -45 : 0, y: isMenuOpen ? -6 : 0 }}
               />
             </motion.button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu (No changes) */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
@@ -136,8 +175,7 @@ const FuturisticNavbar = () => {
                   {navItems.map((item, index) => (
                     <Link key={item.name} to={item.href}>
                       <motion.button
-                        key={item.name}
-                        className={`text-left px-4 py-3 rounded-xl font-medium transition-all duration-300 vamos text-xs ${
+                        className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all duration-300 vamos text-xs ${
                           activeItem === item.name
                             ? "text-white bg-indigo-600/50 border border-indigo-400/30"
                             : "text-gray-300 hover:text-white hover:bg-white/10"

@@ -1,10 +1,24 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 
-const Team = () => {
-  const [selectedMember, setSelectedMember] = useState(null);
+// 1. Define an interface for a TeamMember object
+interface TeamMember {
+  id: number;
+  name: string;
+  role: string;
+  department: string;
+  year: string; // Could be a union type if known: "Freshman" | "Sophomore" | "Junior" | "Senior" | "Alumni"
+  bio: string;
+  skills: string[];
+  image: string;
+}
 
-  const teamMembers = [
+const Team = () => {
+  // 2. Type selectedMember state: TeamMember | null
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+
+  // 3. Explicitly type the teamMembers array as an array of TeamMember
+  const teamMembers: TeamMember[] = [
     {
       id: 1,
       name: "Alex Chen",
@@ -23,7 +37,7 @@ const Team = () => {
       year: "Junior",
       bio: "Driving technical initiatives and fostering collaboration between students and industry professionals.",
       skills: ["Project Management", "Java", "DevOps", "Cloud Computing"],
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b789?w=300&h=300&fit=crop&crop=face"
+      image: "https://images.unsplash.com/photo-1494790108755-2616b612b789?w=300&h=300&fit:crop&crop=face"
     },
     {
       id: 3,
@@ -33,7 +47,7 @@ const Team = () => {
       year: "Senior",
       bio: "Organizing hackathons and technical workshops. Passionate about open source and cybersecurity.",
       skills: ["Cybersecurity", "C++", "Linux", "Blockchain"],
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face"
+      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit:crop&crop=face"
     },
     {
       id: 4,
@@ -43,7 +57,7 @@ const Team = () => {
       year: "Sophomore",
       bio: "Creating engaging events that bring together the CS community. Expert in UX design and mobile development.",
       skills: ["Event Planning", "UI/UX", "Flutter", "Design Thinking"],
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face"
+      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit:crop&crop=face"
     },
     {
       id: 5,
@@ -53,7 +67,7 @@ const Team = () => {
       year: "Junior",
       bio: "Managing finances and partnerships. Specializes in data analytics and financial technology.",
       skills: ["Finance", "Data Analysis", "R", "SQL"],
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop&crop=face"
+      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit:crop&crop=face"
     },
     {
       id: 6,
@@ -63,13 +77,12 @@ const Team = () => {
       year: "Sophomore",
       bio: "Keeping everything organized and maintaining communication channels. Passionate about web development.",
       skills: ["Organization", "JavaScript", "Node.js", "Communication"],
-      image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=300&h=300&fit=crop&crop=face"
+      image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=300&h=300&fit:crop&crop=face"
     }
   ];
 
   return (
     <section className="relative min-h-screen bg-black text-white px-4 py-20 overflow-hidden">
-      {/* Background Effects - Similar to Home */}
       <motion.div
         className="absolute top-20 right-20 w-96 h-96 rounded-full bg-indigo-400 opacity-20"
         animate={{
@@ -82,7 +95,7 @@ const Team = () => {
           ease: "linear",
         }}
       />
-      
+
       <motion.div
         className="absolute bottom-20 left-20 w-80 h-80 rounded-full bg-blue-500 opacity-15"
         animate={{
@@ -97,7 +110,7 @@ const Team = () => {
         }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 max-w-7xl mx-auto mt-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -50 }}
@@ -105,14 +118,17 @@ const Team = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h1 className="text-3xl md:text-6xl font-extrabold mb-6 tracking-wider">
-            <span className="bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-300 bg-clip-text text-transparent ">
-              OUR TEAM
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="mb-8"
+          >
+            <span className="alegreya-sans-sc-regular inline-block px-4 py-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-full border border-blue-400/30 text-blue-300 text-base font-mono ">
+              &lt;TEAM_CSESA/&gt;
             </span>
-          </h1>
-          <p className="text-xl md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Meet our techies
-          </p>
+          </motion.div>
+
         </motion.div>
 
         {/* Team Grid */}
@@ -154,9 +170,9 @@ const Team = () => {
                   <h3 className="text-lg font-bold mb-2 text-white group-hover:text-blue-400 transition-colors vamos">
                     {member.name}
                   </h3>
-                  <p className="text-blue-400 font-semibold mb-1">{member.role}</p>
-                  <p className="text-gray-400 text-sm mb-4">{member.department}</p>
-                  
+                  <p className="text-blue-400 font-semibold mb-1 alegreya-sans-sc-regular">{member.role}</p>
+                  <p className="text-gray-400 text-sm mb-4 alegreya-sans-sc-regular">{member.department}</p>
+
                   {/* Skills Preview */}
                   <div className="flex flex-wrap justify-center gap-2 mb-4">
                     {member.skills.slice(0, 2).map((skill, idx) => (
@@ -187,40 +203,12 @@ const Team = () => {
           ))}
         </div>
 
-        {/* Stats Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
-        >
-          {[
-            { number: "500+", label: "Active Members" },
-            { number: "50+", label: "Events Hosted" },
-            { number: "25+", label: "Industry Partners" },
-            { number: "100%", label: "Passion for CS" }
-          ].map((stat, index) => (
-            <motion.div
-              key={index}
-              whileHover={{ scale: 1.1 }}
-              className="bg-gray-900/30 backdrop-blur-md rounded-xl p-6 border border-gray-700/30"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
-                className="text-3xl md:text-4xl font-bold text-blue-400 mb-2"
-              >
-                {stat.number}
-              </motion.div>
-              <div className="text-gray-300">{stat.label}</div>
-            </motion.div>
-          ))}
-        </motion.div>
+        
       </div>
 
       {/* Modal for Member Details */}
       <AnimatePresence>
+        {/* 4. Conditional rendering ensures selectedMember is not null */}
         {selectedMember && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -242,23 +230,23 @@ const Team = () => {
               >
                 ×
               </button>
-              
+
               <div className="flex flex-col md:flex-row gap-8">
                 <div className="flex-shrink-0">
                   <img
-                    src={selectedMember.image}
-                    alt={selectedMember.name}
+                    src={selectedMember.image} // No error now as selectedMember is guaranteed to be a TeamMember
+                    alt={selectedMember.name} // No error
                     className="w-48 h-48 rounded-2xl object-cover border-4 border-blue-500/30"
                   />
                 </div>
-                
+
                 <div className="flex-1">
                   <h2 className="text-3xl font-bold text-white mb-2">{selectedMember.name}</h2>
                   <p className="text-blue-400 text-xl font-semibold mb-1">{selectedMember.role}</p>
                   <p className="text-gray-400 mb-4">{selectedMember.department} • {selectedMember.year}</p>
-                  
+
                   <p className="text-gray-300 mb-6 leading-relaxed">{selectedMember.bio}</p>
-                  
+
                   <div>
                     <h3 className="text-white font-semibold mb-3">Skills & Expertise</h3>
                     <div className="flex flex-wrap gap-3">

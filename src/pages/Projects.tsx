@@ -1,11 +1,28 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 
-const Projects = () => {
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [filterCategory, setFilterCategory] = useState("all");
+interface Project {
+  id: number;
+  title: string;
+  category: "AI/ML" | "Web Development" | "VR/AR" | "Mobile Development" | "Blockchain" | "IoT"; 
+  status: "completed" | "in-progress" | "planning";
+  description: string;
+  longDescription: string;
+  technologies: string[];
+  github: string | null; 
+  demo: string | null; 
+  image: string;
+  team: string[];
+  achievements: string[];
+  timeline: string;
+}
 
-  const projects = [
+const Projects = () => {
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [filterCategory, setFilterCategory] = useState<Project['category'] | "all">("all");
+
+
+  const projects: Project[] = [
     {
       id: 1,
       title: "AI Study Buddy",
@@ -98,15 +115,16 @@ const Projects = () => {
     }
   ];
 
-  const categories = ["all", "AI/ML", "Web Development", "VR/AR", "Mobile Development", "Blockchain", "IoT"];
-  const statusColors = {
+  const categories: Array<Project['category'] | "all"> = ["all", "AI/ML", "Web Development", "VR/AR", "Mobile Development", "Blockchain", "IoT"];
+
+  const statusColors: Record<Project['status'], string> = {
     completed: "bg-green-500",
     "in-progress": "bg-yellow-500",
     planning: "bg-blue-500"
   };
 
-  const filteredProjects = filterCategory === "all" 
-    ? projects 
+  const filteredProjects = filterCategory === "all"
+    ? projects
     : projects.filter(project => project.category === filterCategory);
 
   return (
@@ -125,7 +143,7 @@ const Projects = () => {
           ease: "easeInOut",
         }}
       />
-      
+
       <motion.div
         className="absolute bottom-32 right-10 w-96 h-96 rounded-full bg-cyan-400 opacity-15"
         animate={{
@@ -147,14 +165,16 @@ const Projects = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-wider">
-            <span className="bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-300 bg-clip-text text-transparent">
-              OUR PROJECTS
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="mb-8"
+          >
+            <span className="my-4 alegreya-sans-sc-regular inline-block px-4 py-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-full border border-blue-400/30 text-blue-300 text-base font-mono ">
+              &lt;PROJECTS_CSESA/&gt;
             </span>
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-            Innovative solutions built by students, for students. Exploring the future of technology.
-          </p>
+          </motion.div>
         </motion.div>
 
         {/* Filter Categories */}
@@ -183,7 +203,7 @@ const Projects = () => {
 
         {/* Projects Grid */}
         <motion.div
-          layout
+          layout 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16"
         >
           <AnimatePresence>
@@ -208,6 +228,7 @@ const Projects = () => {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute top-4 left-4 flex gap-2">
+                      {/* Access statusColors using project.status (now correctly typed) */}
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${statusColors[project.status]}`}>
                         {project.status.replace("-", " ").toUpperCase()}
                       </span>
@@ -222,7 +243,7 @@ const Projects = () => {
                     <h3 className="text-lg font-bold mb-3 text-white group-hover:text-blue-400 transition-colors vamos">
                       {project.title}
                     </h3>
-                    <p className="text-gray-300 mb-4 line-clamp-3">
+                    <p className="text-gray-300 mb-4 line-clamp-3 alegreya-sans-sc-regular">
                       {project.description}
                     </p>
 
@@ -274,41 +295,11 @@ const Projects = () => {
             ))}
           </AnimatePresence>
         </motion.div>
-
-        {/* Statistics */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
-        >
-          {[
-            { number: "25+", label: "Projects Completed" },
-            { number: "10+", label: "Technologies Used" },
-            { number: "50+", label: "Contributors" },
-            { number: "10K+", label: "Users Impacted" }
-          ].map((stat, index) => (
-            <motion.div
-              key={index}
-              whileHover={{ scale: 1.1 }}
-              className="bg-gray-900/30 backdrop-blur-md rounded-xl p-6 border border-gray-700/30"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
-                className="text-3xl md:text-4xl font-bold text-cyan-400 mb-2"
-              >
-                {stat.number}
-              </motion.div>
-              <div className="text-gray-300">{stat.label}</div>
-            </motion.div>
-          ))}
-        </motion.div>
       </div>
 
       {/* Project Detail Modal */}
       <AnimatePresence>
+        {/* 7. Conditional rendering ensures selectedProject is not null */}
         {selectedProject && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -330,12 +321,12 @@ const Projects = () => {
               >
                 ×
               </button>
-              
+
               {/* Project Header */}
               <div className="relative h-64 overflow-hidden rounded-t-2xl">
                 <img
-                  src={selectedProject.image}
-                  alt={selectedProject.title}
+                  src={selectedProject.image} 
+                  alt={selectedProject.title} 
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -410,7 +401,7 @@ const Projects = () => {
 
                 {/* Action Buttons */}
                 <div className="flex gap-4">
-                  {selectedProject.github && (
+                  {selectedProject.github && ( 
                     <motion.a
                       href={selectedProject.github}
                       target="_blank"
@@ -422,7 +413,7 @@ const Projects = () => {
                       <span>View Code</span>
                     </motion.a>
                   )}
-                  {selectedProject.demo && (
+                  {selectedProject.demo && ( 
                     <motion.a
                       href={selectedProject.demo}
                       target="_blank"

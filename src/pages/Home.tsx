@@ -1,5 +1,6 @@
-import { motion, AnimatePresence, easeIn } from "motion/react";
+import { motion } from "motion/react";
 import "./Home.css";
+import LightRays from "../components/ui/LightRays";
 
 const Home = () => {
   return (
@@ -40,9 +41,9 @@ const Home = () => {
         <div className="p-4 ">
           <h1 className="p-4 border rounded text-4xl md:text-6xl font-extrabold mb-4 leading-tight vamos tracking-widest">
 
-            CSESA
+            {`< CSESA />`}
           </h1>
-          <p className="border rounded text-md md:text-xl mt-4 text-gray-300 max-w-2xl mx-auto ">
+          <p className="border rounded text-md md:text-xl mt-4 text-gray-300 max-w-2xl mx-auto alegreya-sans-sc-regular ">
 
             Computer Science Engineering Students Association
           </p>

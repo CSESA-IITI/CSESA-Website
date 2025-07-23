@@ -1,409 +1,668 @@
-import { motion, AnimatePresence } from "motion/react";
-import { useState, useEffect } from "react";
+import { motion, useScroll, useTransform, useInView } from "motion/react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import type { MotionValue } from "motion/react"; 
+interface MousePosition {
+  x: number;
+  y: number;
+}
+
+interface Milestone {
+  year: string;
+  title: string;
+  description: string;
+  icon: string;
+  tech: string;
+}
+
+interface Value {
+  title: string;
+  description: string;
+  icon: string;
+  gradient: string;
+  pattern: string;
+}
+
+// Define types for the GlowCard component's props
+interface GlowCardProps {
+  children: React.ReactNode; // Content inside the card
+  className?: string; // Optional CSS class names
+  glowColor?: "blue" | "purple" | "green" | "orange"; // Specific allowed colors
+}
 
 const About = () => {
-  const [activeSection, setActiveSection] = useState(0);
-  const [isVisible, setIsVisible] = useState({});
+  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState<any>({});
 
-  // Counter animation hook
-  const useCounter = (end, duration = 2000) => {
-    const [count, setCount] = useState(0);
-    const [hasAnimated, setHasAnimated] = useState(false);
+  const containerRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef, 
+    offset: ["start start", "end end"] 
+  });
+
+  useEffect(() => {
+    let rafId: number | null = null; 
+    const handleMouseMove = (e: MouseEvent) => { 
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setMousePosition({ x: e.clientX, y: e.clientY });
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+
+  const useCounter = (end: number, duration: number = 2000) => {
+    const [count, setCount] = useState<number>(0);
+    const [hasAnimated, setHasAnimated] = useState<boolean>(false);
+    // 4. Type counterRef: HTMLElement | null
+    const counterRef = useRef<HTMLElement>(null);
+    const isInView = useInView(counterRef, { once: true, threshold: 0.3 });
 
     useEffect(() => {
-      if (!hasAnimated && isVisible.stats) {
+      if (!hasAnimated && isInView) {
         setHasAnimated(true);
-        let startTime;
-        const animate = (currentTime) => {
+        let startTime: number | null = null;
+        const animate = (currentTime: DOMHighResTimeStamp) => { 
           if (!startTime) startTime = currentTime;
           const progress = Math.min((currentTime - startTime) / duration, 1);
-          setCount(Math.floor(progress * end));
+          const easeProgress = 1 - Math.pow(1 - progress, 3);
+          setCount(Math.floor(easeProgress * end));
           if (progress < 1) {
             requestAnimationFrame(animate);
           }
         };
         requestAnimationFrame(animate);
       }
-    }, [end, duration, hasAnimated, isVisible.stats]);
+    }, [end, duration, hasAnimated, isInView]);
 
-    return count;
+    return { count, ref: counterRef as React.RefObject<HTMLElement> };
   };
 
-  const memberCount = useCounter(500);
-  const eventCount = useCounter(150);
-  const projectCount = useCounter(25);
-  const yearCount = useCounter(8);
+  const memberCounter = useCounter(50);
+  const eventCounter = useCounter(10); 
+  const projectCounter = useCounter(8);
+  const yearCounter = useCounter(7); 
 
-  const milestones = [
+  const backgroundY: MotionValue<string> = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
+  const textY: MotionValue<string> = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
+
+  const milestones: Milestone[] = useMemo(() => [
     {
       year: "2017",
       title: "Foundation",
       description: "CSESA was founded by a group of passionate computer science students with a vision to create a supportive community for tech enthusiasts.",
-      icon: "🚀"
+      icon: "🚀",
+      tech: "Genesis Protocol"
     },
     {
       year: "2018",
       title: "First Hackathon",
       description: "Organized our inaugural hackathon 'CodeStorm' with 100+ participants, establishing CSESA as a major tech event organizer.",
-      icon: "💻"
+      icon: "⚡",
+      tech: "CodeStorm v1.0"
     },
     {
       year: "2019",
       title: "Industry Partnerships",
       description: "Formed strategic partnerships with leading tech companies, providing students with internship and job opportunities.",
-      icon: "🤝"
+      icon: "🤝",
+      tech: "Partnership Matrix"
     },
     {
       year: "2020",
       title: "Digital Transformation",
       description: "Successfully transitioned to virtual events during the pandemic, reaching students globally and expanding our impact.",
-      icon: "🌐"
+      icon: "🌐",
+      tech: "Virtual Hub 2.0"
     },
     {
       year: "2022",
       title: "Innovation Lab",
       description: "Launched our Innovation Lab, providing students with access to cutting-edge technology and mentorship programs.",
-      icon: "🔬"
+      icon: "🔬",
+      tech: "Lab OS"
     },
     {
       year: "2024",
       title: "AI Initiative",
       description: "Introduced AI/ML workshops and projects, keeping pace with the latest technological advancements.",
-      icon: "🤖"
+      icon: "🤖",
+      tech: "Neural Network"
     },
     {
       year: "2025",
       title: "Global Reach",
       description: "Expanded our community to include international students, fostering global collaboration and knowledge sharing.",
-      icon: "🌍"
+      icon: "🌍",
+      tech: "Global Mesh"
     }
-  ];
+  ], []);
 
-  const values = [
+  const values: Value[] = useMemo(() => [
     {
       title: "Innovation",
       description: "We foster creativity and encourage students to think outside the box, pushing the boundaries of what's possible in technology.",
       icon: "💡",
-      color: "from-yellow-400 to-orange-500"
+      gradient: "from-blue-400 via-blue-500 to-blue-600",
+      pattern: "circuit"
     },
     {
       title: "Collaboration",
       description: "We believe in the power of teamwork and create opportunities for students to learn from each other and work together.",
       icon: "🤝",
-      color: "from-blue-400 to-indigo-500"
+      gradient: "from-blue-400 via-blue-500 to-blue-600",
+      pattern: "network"
     },
     {
       title: "Excellence",
       description: "We strive for the highest standards in everything we do, from our events to our projects and community initiatives.",
       icon: "⭐",
-      color: "from-purple-400 to-pink-500"
+      gradient: "from-blue-400 via-blue-500 to-blue-600",
+      pattern: "hexagon"
     },
     {
       title: "Inclusivity",
       description: "We welcome students from all backgrounds and skill levels, creating an environment where everyone can learn and grow.",
       icon: "🌈",
-      color: "from-green-400 to-teal-500"
+      gradient: "from-blue-400 via-blue-500 to-blue-600",
+      pattern: "mesh"
     }
-  ];
+  ], []);
 
-  const achievements = [
-    "Winner of National Student Organization Award 2023",
-    "Recognized as Best Tech Community by University",
-    "Featured in Tech Education Magazine",
-    "Partnership with 25+ Industry Leaders",
-    "Graduated 200+ Students into Tech Careers",
-    "Organized 150+ Educational Events",
-    "Maintained 95% Student Satisfaction Rate",
-    "Contributed to 50+ Open Source Projects"
-  ];
-
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px'
+  const GlowCard = ({ children, className = "", glowColor = "blue" }: GlowCardProps) => {
+    const colors = {
+      blue: "shadow-blue-500/20 hover:shadow-blue-400/40",
+      purple: "shadow-blue-500/20 hover:shadow-blue-400/40", 
+      green: "shadow-blue-500/20 hover:shadow-blue-400/40",
+      orange: "shadow-blue-500/20 hover:shadow-blue-400/40"
     };
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setIsVisible(prev => ({
-            ...prev,
-            [entry.target.id]: true
-          }));
-        }
-      });
-    }, observerOptions);
+    return (
+      <motion.div
+        whileHover={{ scale: 1.02, rotateY: 5 }}
+        whileTap={{ scale: 0.98 }}
+        className={`
+          relative bg-gradient-to-br from-slate-900/80 to-slate-800/60
+          backdrop-blur-xl rounded-2xl border border-slate-600/40
+          shadow-2xl ${colors[glowColor]} transition-all duration-500
+          ${className}
+        `}
+        style={{
+          transformStyle: 'preserve-3d',
+          perspective: 1000
+        } as React.CSSProperties} 
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+        {children}
+      </motion.div>
+    );
+  };
 
-    const sections = document.querySelectorAll('[data-observe]');
-    sections.forEach((section) => observer.observe(section));
+  // Binary rain effect component
+  interface Drop { 
+    id: number;
+    x: number;
+    delay: number;
+    speed: number;
+  }
 
-    return () => observer.disconnect();
-  }, []);
+  const BinaryRain = () => {
+    const [drops, setDrops] = useState<Drop[]>([]); 
+
+    useEffect(() => {
+      const newDrops: Drop[] = Array.from({ length: 20 }, (_, i) => ({ 
+        id: i,
+        x: Math.random() * 100,
+        delay: Math.random() * 5,
+        speed: 20 + Math.random() * 50
+      }));
+      setDrops(newDrops);
+    }, []);
+
+    return (
+      <div className="fixed inset-0 pointer-events-none opacity-10 z-0">
+        {drops.map((drop) => (
+          <motion.div
+            key={drop.id}
+            className="absolute text-green-400 font-mono text-xs"
+            style={{ left: `${drop.x}%` }}
+            animate={{
+              y: ['0vh', '100vh'] as [string, string], 
+            }}
+            transition={{
+              duration: drop.speed,
+              repeat: Infinity,
+              ease: 'linear',
+              delay: drop.delay
+            }}
+          >
+            {Math.random() > 0.5 ? '1' : '0'}
+          </motion.div>
+        ))}
+      </div>
+    );
+  };
 
   return (
-    <section className="relative min-h-screen bg-black text-white overflow-hidden">
-      {/* Dynamic Background Effects */}
+    <section ref={containerRef} className="relative min-h-screen bg-black text-white overflow-hidden">
+      <BinaryRain />
+
+      {/* Dynamic cursor glow */}
       <motion.div
-        className="absolute top-20 right-20 w-80 h-80 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 opacity-10"
+        className="fixed top-0 left-0 pointer-events-none z-50 mix-blend-screen"
         animate={{
-          scale: [1, 1.5, 1],
-          rotate: [0, 360],
-          x: [0, 100, 0],
+          x: mousePosition.x - 100,
+          y: mousePosition.y - 100,
         }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-      
+        transition={{ type: "tween", ease: "backOut", duration: 0.5 }}
+      >
+        <div className="w-48 h-48 bg-gradient-to-r from-blue-400/20 to-blue-500/20 rounded-full blur-3xl"></div>
+      </motion.div>
+
+      {/* Floating geometric shapes */}
       <motion.div
-        className="absolute bottom-32 left-10 w-96 h-96 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 opacity-15"
-        animate={{
-          scale: [1.2, 1, 1.2],
-          y: [0, -100, 0],
-        }}
-        transition={{
-          duration: 25,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
+        className="absolute top-20 right-20 w-32 h-32"
+        style={{ y: backgroundY }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      >
+        <div className="w-full h-full border-2 border-blue-400/30 transform rotate-45 rounded-lg"></div>
+      </motion.div>
 
       <motion.div
-        className="absolute top-1/2 left-1/2 w-72 h-72 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-5"
-        animate={{
-          scale: [1, 1.8, 1],
-          rotate: [0, -360],
-        }}
-        transition={{
-          duration: 30,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-      />
+        className="absolute bottom-40 left-10 w-24 h-24"
+        style={{ y: useTransform(scrollYProgress, [0, 1], ['0px', '200px']) }}
+        animate={{ rotate: -360 }}
+        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+      >
+        <div className="w-full h-full border-2 border-blue-400/30 rounded-full"></div>
+      </motion.div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4">
         {/* Hero Section */}
         <motion.div
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="text-center py-20"
+          style={{ y: textY }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          className="text-center py-24"
         >
-          <h1 className="text-3xl md:text-6xl font-extrabold mb-8 tracking-wider">
-            <span className="bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-300 bg-clip-text text-transparent">
-              ABOUT CSESA
-            </span>
-          </h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="text-lg md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed"
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="mb-8"
           >
-            Empowering the next generation of computer scientists through innovation, collaboration, and excellence
-          </motion.p>
-        </motion.div>
+            <span className="alegreya-sans-sc-regular inline-block px-4 py-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-full border border-blue-400/30 text-blue-300 text-sm font-mono mb-6">
+              &lt;ABOUT_CSESA/&gt;
+            </span>
+          </motion.div>
 
-        {/* Mission Statement */}
-        <motion.div
-          id="mission"
-          data-observe
-          initial={{ opacity: 0, y: 50 }}
-          animate={isVisible.mission ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="mb-32"
-        >
-          <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 backdrop-blur-md rounded-3xl p-12 border border-blue-500/20">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-8 text-white">
-              Our Mission
-            </h2>
-            <p className="text-xl text-gray-300 text-center leading-relaxed max-w-4xl mx-auto">
-              To create an inclusive community where computer science students can learn, grow, and innovate together. 
-              We bridge the gap between academic learning and industry practice, preparing students for successful 
-              careers in technology while fostering a culture of collaboration and continuous learning.
+          
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.6 }}
+            className="relative alegreya-sans-sc-regular"
+          >
+            <p className="text-lg md:text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed font-light">
+              Empowering the next generation of{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-500 font-semibold">
+                computer scientists
+              </span>{' '}
+              through innovation, collaboration, and excellence
             </p>
-          </div>
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
+          </motion.div>
         </motion.div>
 
-        {/* Statistics */}
+        {/* Mission Statement with holographic effect */}
         <motion.div
-          id="stats"
-          data-observe
-          initial={{ opacity: 0, y: 50 }}
-          animate={isVisible.stats ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
           className="mb-32"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white">
-            Our Impact
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <GlowCard className="p-12 group" glowColor="blue">
+            <div className="text-center relative">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="relative"
+              >
+                <h2 className="text-4xl md:text-6xl font-black mb-8 relative">
+                  <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+                    OUR MISSION
+                  </span>
+                  <motion.div
+                    className=" absolute inset-0 bg-gradient-to-r from-blue-400/30 to-blue-500/30 bg-clip-text text-transparent blur-sm"
+                    animate={{ opacity: [0, 1, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    OUR MISSION
+                  </motion.div>
+                </h2>
+
+                <div className="relative">
+                  <p className="text-xl text-slate-300 leading-relaxed max-w-4xl mx-auto font-light alegreya-sans-sc-regular
+                  ">
+                    To create an <span className="text-blue-400 font-medium">inclusive community</span> where computer science students can learn, grow, and innovate together.
+                    We bridge the gap between <span className="text-blue-400 font-medium">academic learning</span> and <span className="text-blue-400 font-medium">industry practice</span>,
+                    preparing students for successful careers in technology while fostering a culture of collaboration and continuous learning.
+                  </p>
+
+                  {/* Tech decorations */}
+                  <div className="absolute -top-4 -left-4 w-8 h-8 border-l-2 border-t-2 border-blue-400/50"></div>
+                  <div className="absolute -top-4 -right-4 w-8 h-8 border-r-2 border-t-2 border-blue-400/50"></div>
+                  <div className="absolute -bottom-4 -left-4 w-8 h-8 border-l-2 border-b-2 border-blue-400/50"></div>
+                  <div className="absolute -bottom-4 -right-4 w-8 h-8 border-r-2 border-b-2 border-blue-400/50"></div>
+                </div>
+              </motion.div>
+            </div>
+          </GlowCard>
+        </motion.div>
+
+        {/* Enhanced Statistics with tech styling */}
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="mb-32"
+        >
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-black mb-4">
+              <span className="bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent">
+                SYSTEM STATUS
+              </span>
+            </h2>
+            <div className="flex justify-center space-x-2 mt-4">
+              {[1, 2, 3].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-3 h-3 bg-blue-400 rounded-full"
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 alegreya-sans-sc-regular">
             {[
-              { number: memberCount, suffix: "+", label: "Active Members", color: "text-blue-400" },
-              { number: eventCount, suffix: "+", label: "Events Hosted", color: "text-purple-400" },
-              { number: projectCount, suffix: "+", label: "Projects Built", color: "text-cyan-400" },
-              { number: yearCount, suffix: "", label: "Years Strong", color: "text-green-400" }
+              { counter: memberCounter, suffix: "+", label: "Active Members", color: "text-blue-400", bg: "blue" },
+              { counter: eventCounter, suffix: "+", label: "Events Hosted", color: "text-blue-400", bg: "blue" },
+              { counter: projectCounter, suffix: "+", label: "Projects Built", color: "text-blue-400", bg: "blue" },
+              { counter: yearCounter, suffix: "+", label: "Years Strong", color: "text-blue-400", bg: "blue" }
             ].map((stat, index) => (
               <motion.div
                 key={index}
-                initial={{ scale: 0 }}
-                animate={isVisible.stats ? { scale: 1 } : {}}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.1 }}
-                className="bg-gray-900/50 backdrop-blur-md rounded-2xl p-8 border border-gray-700/50 text-center hover:border-blue-500/50 transition-all duration-300"
+                ref={stat.counter.ref}
+                initial={{ scale: 0, rotateY: -180 }}
+                whileInView={{ scale: 1, rotateY: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+                className="group"
               >
-                <div className={`text-5xl md:text-6xl font-bold mb-3 ${stat.color}`}>
-                  {stat.number}{stat.suffix}
-                </div>
-                <div className="text-gray-300 text-lg">{stat.label}</div>
+                <GlowCard glowColor={stat.bg} className="p-8 text-center h-full">
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    className="relative"
+                  >
+                    <div className={`text-4xl md:text-6xl font-black mb-3 ${stat.color} relative`}>
+                      <span className="relative z-10">{stat.counter.count}{stat.suffix}</span>
+                      <motion.div
+                        className="absolute inset-0 blur-lg opacity-50"
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        {stat.counter.count}{stat.suffix}
+                      </motion.div>
+                    </div>
+                    <div className="text-slate-300 text-sm font-mono tracking-wider mb-2 opacity-60">
+                      {`[${index + 1}.exe]`}
+                    </div>
+                    <div className="text-slate-300 text-lg font-light">{stat.label}</div>
+                  </motion.div>
+                </GlowCard>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
-        {/* Our Values */}
+        {/* Enhanced Values Section */}
         <motion.div
-          id="values"
-          data-observe
-          initial={{ opacity: 0, y: 50 }}
-          animate={isVisible.values ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
           className="mb-32"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white">
-            Our Values
-          </h2>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-black mb-4">
+              <span className="bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent">
+                CORE VALUES
+              </span>
+            </h2>
+            <p className="text-slate-400 font-mono text-sm">{'{ initializing_values.config }'}</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {values.map((value, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                animate={isVisible.values ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                className="bg-gray-900/50 backdrop-blur-md rounded-2xl p-8 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300"
+                initial={{ opacity: 0, x: index % 2 === 0 ? -60 : 60, rotateX: -15 }}
+                whileInView={{ opacity: 1, x: 0, rotateX: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+                className="group"
               >
-                <div className="flex items-center mb-4">
-                  <div className={`text-4xl mr-4 p-3 rounded-full bg-gradient-to-r ${value.color} bg-opacity-20`}>
-                    {value.icon}
+                <GlowCard className="p-8 h-full overflow-hidden" glowColor="blue">
+                  <div className="relative">
+                    <div className="flex items-center mb-6">
+                      <motion.div
+                        whileHover={{ rotate: 360, scale: 1.2 }}
+                        transition={{ duration: 0.6 }}
+                        className={`text-4xl p-4 rounded-xl bg-gradient-to-r ${value.gradient} bg-opacity-20 mr-4 backdrop-blur-sm border border-white/10`}
+                      >
+                        {value.icon}
+                      </motion.div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-white mb-1">{value.title}</h3>
+                        <span className="text-xs font-mono text-slate-400 ">[{value.pattern}.dll]</span>
+                      </div>
+                    </div>
+                    <p className="text-slate-300 leading-relaxed font-light alegreya-sans-sc-regular">{value.description}</p>
+
+                    {/* Tech corner decorations */}
+                    <div className="absolute top-0 right-0 w-16 h-16">
+                      <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-white/20"></div>
+                      <div className="absolute top-6 right-6 w-2 h-2 bg-white/20 rounded-full"></div>
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-white">{value.title}</h3>
-                </div>
-                <p className="text-gray-300 leading-relaxed">{value.description}</p>
+                </GlowCard>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
-        {/* Timeline */}
+        {/* Enhanced Timeline */}
         <motion.div
-          id="timeline"
-          data-observe
-          initial={{ opacity: 0, y: 50 }}
-          animate={isVisible.timeline ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
           className="mb-32"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white">
-            Our Journey
-          </h2>
-          <div className="relative">
-            {/* Timeline Line */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500 opacity-30"></div>
-            
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-black mb-4">
+              <span className="bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent">
+                TIMELINE.LOG
+              </span>
+            </h2>
+            <div className="flex justify-center items-center space-x-4 mt-4">
+              <div className="text-blue-400 text-sm font-mono">LOADING HISTORY...</div>
+              <div className="w-16 h-1 bg-slate-700 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-blue-400 to-blue-500"
+                  animate={{ x: [-64, 64] as [number, number] }} // Cast to tuple of numbers
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="relative max-w-4xl mx-auto">
+            {/* Central Timeline Line */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 opacity-60"></div>
+
             {milestones.map((milestone, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -100 : 100 }}
-                animate={isVisible.timeline ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-                className={`flex items-center mb-16 ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -100 : 100, rotateY: -30 }}
+                whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+                className={`flex items-center mb-16 relative ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}
               >
                 <div className={`w-full md:w-5/12 ${index % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'}`}>
-                  <div className="bg-gray-900/50 backdrop-blur-md rounded-2xl p-6 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300">
-                    <div className="flex items-center mb-3">
-                      <span className="text-3xl mr-3">{milestone.icon}</span>
-                      <div>
-                        <h3 className="text-2xl font-bold text-white">{milestone.title}</h3>
-                        <p className="text-blue-400 font-semibold">{milestone.year}</p>
+                  <GlowCard className="p-6 group" glowColor="blue">
+                    <div className="flex items-start mb-4">
+                      <motion.div
+                        whileHover={{ scale: 1.2, rotate: 10 }}
+                        className="text-3xl mr-4 p-3 rounded-full bg-gradient-to-r from-slate-700 to-slate-800 border border-slate-600"
+                      >
+                        {milestone.icon}
+                      </motion.div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-xl font-bold text-white">{milestone.title}</h3>
+                          <span className="text-cyan-400 font-mono text-sm px-2 py-1 bg-cyan-400/10 rounded border border-cyan-400/30">
+                            {milestone.year}
+                          </span>
+                        </div>
+                        <div className="text-xs font-mono text-slate-500 mb-3">[{milestone.tech}]</div>
+                        <p className="text-slate-300 text-sm leading-relaxed font-light alegreya-sans-sc-regular">{milestone.description}</p>
                       </div>
                     </div>
-                    <p className="text-gray-300">{milestone.description}</p>
-                  </div>
+
+                    {/* Status indicator */}
+                    <div className="flex items-center justify-end space-x-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      <span className="text-xs font-mono text-green-400">DEPLOYED</span>
+                    </div>
+                  </GlowCard>
                 </div>
-                
-                {/* Timeline Dot */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full border-4 border-gray-900"></div>
+
+                {/* Enhanced Timeline Dot */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  whileInView={{ scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
+                  className="absolute left-1/2 transform -translate-x-1/2"
+                >
+                  <div className="relative">
+                    <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full border-4 border-slate-900 shadow-lg"></div>
+                    <motion.div
+                      className="absolute inset-0 w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full"
+                      animate={{ scale: [1, 1.5, 1], opacity: [1, 0.3, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: index * 0.3 }}
+                    />
+                  </div>
+                </motion.div>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
-        {/* Achievements */}
+        {/* Enhanced Call to Action */}
         <motion.div
-          id="achievements"
-          data-observe
-          initial={{ opacity: 0, y: 50 }}
-          animate={isVisible.achievements ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="mb-32"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white">
-            Our Achievements
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {achievements.map((achievement, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={isVisible.achievements ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center p-4 bg-gray-900/30 backdrop-blur-md rounded-xl border border-gray-700/30 hover:border-green-500/50 transition-all duration-300"
-              >
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-4 flex-shrink-0"></div>
-                <p className="text-gray-300">{achievement}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Call to Action */}
-        <motion.div
-          id="cta"
-          data-observe
-          initial={{ opacity: 0, y: 50 }}
-          animate={isVisible.cta ? { opacity: 1, y: 0 } : {}}
+          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
           className="text-center py-20"
         >
-          <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 backdrop-blur-md rounded-3xl p-12 border border-blue-500/20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-              Ready to Join Us?
+          <GlowCard className="p-12 relative overflow-hidden" glowColor="blue">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute -top-10 -right-10 w-40 h-40 border-4 border-dashed border-blue-400/20 rounded-full"
+            />
+
+            <h2 className="text-4xl md:text-6xl font-black mb-6 relative">
+              <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+                JOIN THE NETWORK
+              </span>
             </h2>
-            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              Be part of a community that's shaping the future of technology. Whether you're a beginner or an expert, 
+
+            <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto font-light leading-relaxed alegreya-sans-sc-regular">
+              Be part of a community that's <span className="text-blue-400 font-medium">shaping the future</span> of technology.
+              Whether you're a <span className="text-blue-400 font-medium">beginner</span> or an <span className="text-blue-400 font-medium">expert</span>,
               there's a place for you in CSESA.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <motion.button
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)" }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-full font-bold text-lg hover:from-blue-300 hover:to-blue-500 transition-all duration-300"
+                className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full font-bold text-lg overflow-hidden"
               >
-                Become a Member
+                <span className="relative z-10">Initialize Membership</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></div>
               </motion.button>
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-transparent border-2 border-blue-500 text-blue-400 rounded-full font-bold text-lg hover:bg-blue-500 hover:text-white transition-all duration-300"
+                className="group relative px-8 py-4 bg-transparent border-2 border-slate-400 text-slate-300 rounded-full font-bold text-lg overflow-hidden"
               >
-                Learn More
+                <span className="relative z-10">Explore Projects</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-700 to-slate-600 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></div>
               </motion.button>
             </div>
+
+            {/* Tech decorations */}
+            <div className="absolute bottom-4 right-4 w-16 h-16 opacity-30">
+              <div className="w-full h-full border-2 border-dashed border-blue-400/30 rounded-full animate-spin" style={{ animationDuration: '20s' }}></div>
+            </div>
+          </GlowCard>
+        </motion.div>
+
+        {/* Footer with tech theme */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center py-12 border-t border-slate-800"
+        >
+          <div className="flex justify-center space-x-4 mb-6">
+            {['GitHub', 'Discord', 'LinkedIn', 'Twitter'].map((platform, index) => (
+              <motion.a
+                key={index}
+                href="#"
+                whileHover={{ y: -5, scale: 1.1 }}
+                className="px-4 py-2 bg-slate-800 rounded-lg text-slate-300 text-sm font-mono hover:text-blue-400 transition-colors"
+              >
+                {platform}.connect()
+              </motion.a>
+            ))}
           </div>
+
+          <p className="text-slate-500 text-sm font-mono">
+            <span className="text-blue-400">$</span> CSESA.render() <span className="animate-pulse">|</span>
+          </p>
+          <p className="text-slate-600 text-xs mt-2">
+            © {new Date().getFullYear()} Computer Science Engineering Students Association. All rights reserved.
+          </p>
         </motion.div>
       </div>
     </section>
