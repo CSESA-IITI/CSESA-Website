@@ -54,7 +54,7 @@ const Login = () => {
     <section className="relative min-h-screen flex items-center justify-center bg-black text-white px-4 ">
       <motion.div
         className="w-full max-w-md bg-gradient-to-b from-blue-400 to-white rounded-2xl shadow-2xl px-8 py-12 
-        before:absolute before:inset-0 before:content-[''] before:bg-[url('/noise-texture_3.png')] before:opacity-40 before:z-0"
+        before:absolute before:inset-0 before:content-[''] before:bg-[url('/noise_texture_3.png')] before:opacity-40 before:z-0"
         variants={cardVariants}
         initial="hidden"
         animate="visible"

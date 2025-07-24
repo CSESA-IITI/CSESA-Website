@@ -183,24 +183,7 @@ const About: React.FC = () => {
             <p className="text-xl text-slate-300 leading-relaxed max-w-4xl mx-auto font-light alegreya-sans-sc-regular text-center">To create an <span className="text-blue-400 font-medium">inclusive community</span> where computer science students can learn, grow, and innovate together. We bridge the gap between <span className="text-blue-400 font-medium">academic learning</span> and <span className="text-blue-400 font-medium">industry practice</span>.</p>
           </GlowCard>
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.8 }} className="mb-32">
-          <div className="text-center mb-16"><h2 className="text-4xl md:text-6xl font-black mb-4"><span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">SYSTEM STATUS</span></h2></div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 alegreya-sans-sc-regular">
-            {[
-              { counter: memberCounter, suffix: "+", label: "Active Members", color: "text-blue-400", bg: "blue" as GlowColor },
-              { counter: eventCounter, suffix: "+", label: "Events Hosted", color: "text-purple-400", bg: "purple" as GlowColor },
-              { counter: projectCounter, suffix: "+", label: "Projects Built", color: "text-green-400", bg: "green" as GlowColor },
-              { counter: yearCounter, suffix: "+", label: "Years Strong", color: "text-orange-400", bg: "orange" as GlowColor },
-            ].map((stat, index) => (
-              <motion.div key={index} ref={stat.counter.ref} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: index * 0.1 }}>
-                <GlowCard glowColor={stat.bg} className="p-8 text-center h-full">
-                  <div className={`text-4xl md:text-6xl font-black mb-3 ${stat.color}`}>{stat.counter.count}{stat.suffix}</div>
-                  <div className="text-slate-300 text-lg font-light">{stat.label}</div>
-                </GlowCard>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        
 
         {/* Enhanced Statistics with tech styling */}
         <motion.div
@@ -353,7 +336,6 @@ const About: React.FC = () => {
           </div>
 
           <div className="relative max-w-4xl mx-auto">
-            {/* Central Timeline Line */}
             <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 opacity-60"></div>
 
             {milestones.map((milestone, index) => (
@@ -386,7 +368,6 @@ const About: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Status indicator */}
                     <div className="flex items-center justify-end space-x-2">
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                       <span className="text-xs font-mono text-green-400">DEPLOYED</span>
@@ -394,8 +375,7 @@ const About: React.FC = () => {
                   </GlowCard>
                 </div>
 
-                {/* Enhanced Timeline Dot */}
-                <motion.div
+\                <motion.div
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
@@ -470,34 +450,7 @@ const About: React.FC = () => {
           </GlowCard>
         </motion.div>
 
-        {/* Footer with tech theme */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center py-12 border-t border-slate-800"
-        >
-          <div className="flex justify-center space-x-4 mb-6">
-            {['GitHub', 'Discord', 'LinkedIn', 'Twitter'].map((platform, index) => (
-              <motion.a
-                key={index}
-                href="#"
-                whileHover={{ y: -5, scale: 1.1 }}
-                className="px-4 py-2 bg-slate-800 rounded-lg text-slate-300 text-sm font-mono hover:text-blue-400 transition-colors"
-              >
-                {platform}.connect()
-              </motion.a>
-            ))}
-          </div>
 
-          <p className="text-slate-500 text-sm font-mono">
-            <span className="text-blue-400">$</span> CSESA.render() <span className="animate-pulse">|</span>
-          </p>
-          <p className="text-slate-600 text-xs mt-2">
-            © {new Date().getFullYear()} Computer Science Engineering Students Association. All rights reserved.
-          </p>
-        </motion.div>
       </div>
     </div>
 

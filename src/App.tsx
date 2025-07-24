@@ -1,32 +1,59 @@
+import React, { lazy, Suspense, useState, useEffect } from "react";
+
+import Footer from "./components/Footer";
 import Header from "./components/Navbar";
-import Home from "./pages/Home";
-import PastEvents from "./pages/PastEvents";
-import Team from "./pages/Team";
-import Projects from "./pages/Projects";
-import About from "./pages/About";
-import Login from "./pages/Login";
-import ContactUs from "./pages/ContactUs";
-import { HashRouter as Router, Route, Routes } from "react-router-dom"; 
+import LoadingPage from "./components/Loading";
+
+const LazyHome = lazy(() => import("./pages/Home"));
+const LazyTeam = lazy(() => import("./pages/Team"));
+const LazyEvents = lazy(() => import("./pages/PastEvents"));
+const LazyProjects = lazy(() => import("./pages/Projects"));
+const LazyContact = lazy(() => import("./pages/ContactUs"));
+const LazyLogin = lazy(() => import("./pages/Login"));
+const LazyNotFound = lazy(() => import("./pages/NotFound"));
+
+import { HashRouter as Router, Route, Routes } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+
+// import CardGridPage from "./pages/CardGrid";
+
 import "./App.css";
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500); // 
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <Router> 
+    <Router>
       <div className="relative min-h-screen w-screen overflow-hidden bg-black">
         <div className="relative z-10 flex flex-col min-h-screen bg-black text-white">
           <Header />
 
           <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/team" element={<Team />} />
-              <Route path="/events" element={<PastEvents />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<ContactUs />} />
-              <Route path="/login" element={<Login />} />
-            </Routes>
+            <AnimatePresence>{isLoading && <LoadingPage />}</AnimatePresence>
+
+            <Suspense fallback={null}>
+              <Routes>
+                <Route path="/" element={<LazyHome />} />
+                <Route path="/team" element={<LazyTeam />} />
+                <Route path="/events" element={<LazyEvents />} />
+                <Route path="/projects" element={<LazyProjects />} />
+                <Route path="/contact" element={<LazyContact />} />
+                <Route path="/login" element={<LazyLogin />} />
+                <Route path="/loading" element={<LoadingPage />} />
+                <Route path="*" element={<LazyNotFound />} />
+                {/* <Route path="/cardgrid" element={<CardGridPage />} /> */}
+              </Routes>
+            </Suspense>
           </main>
+          <Footer />
         </div>
       </div>
     </Router>

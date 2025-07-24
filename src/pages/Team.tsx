@@ -126,6 +126,7 @@ const Team = () => {
           >
             <span className="alegreya-sans-sc-regular inline-block px-4 py-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-full border border-blue-400/30 text-blue-300 text-base font-mono ">
               &lt;TEAM_CSESA/&gt;
+              {/* {` { TEAM }`} */}
             </span>
           </motion.div>
 

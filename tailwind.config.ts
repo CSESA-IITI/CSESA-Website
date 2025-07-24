@@ -8,6 +8,7 @@ const config: Config = {
     extend: {
       colors: {
         purpleBlue: '#8A2BE2',
+        'custom-purple': 'rgba(24, 21, 40, 0.85)',
       },
     },
   },

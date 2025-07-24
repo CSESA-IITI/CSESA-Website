@@ -80,7 +80,7 @@ const ContactUs = () => {
           <motion.div
             variants={itemVariants}
             className="relative space-y-6 rounded-2xl h-full px-4 py-8 bg-gradient-to-b from-blue-400 via-blue-300 to-white 
-            before:absolute before:inset-0 before:content-[''] before:bg-[url('/noise-texture_3.png')] before:opacity-40 before:z-0"
+            before:absolute before:inset-0 before:content-[''] before:bg-[url('/noise_texture_3.png')] before:opacity-40 before:z-0"
           >
             <div className="relative z-10 space-y-6">
               <h1 className="text-4xl md:text-5xl font-bold bg-clip-text alegreya-sans-sc-regular">

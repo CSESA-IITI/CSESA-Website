@@ -4,7 +4,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -17,16 +16,18 @@
     "@codaworks/react-glow": "^1.0.6",
     "@react-three/drei": "^10.5.1",
     "@react-three/fiber": "^9.2.0",
+    "@tabler/icons-react": "^3.34.1",
     "@tailwindcss/vite": "^4.1.5",
     "@tsparticles/react": "^3.0.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.10.5",
+    "gsap": "^3.13.0",
     "lucide-react": "^0.510.0",
     "motion": "^12.16.0",
     "ogl": "^1.0.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwind-merge": "^3.3.0",
+    "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.5",
     "three": "^0.178.0",
     "tsparticles": "^3.8.1"
