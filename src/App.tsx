@@ -1,4 +1,3 @@
-import React from "react";
 import Header from "./components/Navbar";
 import Home from "./pages/Home";
 import PastEvents from "./pages/PastEvents";
@@ -7,20 +6,17 @@ import Projects from "./pages/Projects";
 import About from "./pages/About";
 import Login from "./pages/Login";
 import ContactUs from "./pages/ContactUs";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+// *** CHANGE THIS LINE ***
+import { HashRouter as Router, Route, Routes } from "react-router-dom"; // Use HashRouter
 import "./App.css";
 
 function App() {
   return (
-    <Router>
+    // *** AND THIS LINE ***
+    <Router> {/* This now refers to HashRouter */}
       {/* Outer container for the whole app, relative for absolute positioning */}
       <div className="relative min-h-screen w-screen overflow-hidden bg-black">
-
-
-       
-
-        
-        <div className="relative z-10 flex flex-col min-h-screen bg-black text-white"> 
+        <div className="relative z-10 flex flex-col min-h-screen bg-black text-white">
           <Header />
 
           <main className="flex-grow">

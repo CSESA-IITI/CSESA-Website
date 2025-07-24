@@ -1,6 +1,7 @@
-import { motion, useScroll, useTransform, useInView } from "motion/react";
-import { useState, useEffect, useRef, useMemo } from "react";
-import type { MotionValue } from "motion/react"; 
+import { motion, useScroll, useTransform, useInView, MotionValue } from "framer-motion";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+
+// Define component-level types
 interface MousePosition {
   x: number;
   y: number;
@@ -23,51 +24,50 @@ interface Value {
 }
 
 // Define types for the GlowCard component's props
+type GlowColor = "blue" | "purple" | "green" | "orange";
+
 interface GlowCardProps {
-  children: React.ReactNode; // Content inside the card
-  className?: string; // Optional CSS class names
-  glowColor?: "blue" | "purple" | "green" | "orange"; // Specific allowed colors
+  children: React.ReactNode;
+  className?: string;
+  glowColor?: GlowColor;
 }
 
-const About = () => {
+const About: React.FC = () => {
   const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
-  const [isVisible, setIsVisible] = useState<any>({});
 
-  const containerRef = useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
-    target: containerRef, 
-    offset: ["start start", "end end"] 
+    target: containerRef,
+    offset: ["start start", "end end"],
   });
 
   useEffect(() => {
-    let rafId: number | null = null; 
-    const handleMouseMove = (e: MouseEvent) => { 
+    let rafId: number | null = null;
+    const handleMouseMove = (e: MouseEvent) => {
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
         setMousePosition({ x: e.clientX, y: e.clientY });
       });
     };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("mousemove", handleMouseMove);
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);
 
-
   const useCounter = (end: number, duration: number = 2000) => {
     const [count, setCount] = useState<number>(0);
     const [hasAnimated, setHasAnimated] = useState<boolean>(false);
-    // 4. Type counterRef: HTMLElement | null
-    const counterRef = useRef<HTMLElement>(null);
-    const isInView = useInView(counterRef, { once: true, threshold: 0.3 });
+    const counterRef = useRef<HTMLDivElement>(null);
+    const isInView = useInView(counterRef, { once: true, amount: 0.3 });
 
     useEffect(() => {
       if (!hasAnimated && isInView) {
         setHasAnimated(true);
         let startTime: number | null = null;
-        const animate = (currentTime: DOMHighResTimeStamp) => { 
+        const animate = (currentTime: DOMHighResTimeStamp) => {
           if (!startTime) startTime = currentTime;
           const progress = Math.min((currentTime - startTime) / duration, 1);
           const easeProgress = 1 - Math.pow(1 - progress, 3);
@@ -80,122 +80,47 @@ const About = () => {
       }
     }, [end, duration, hasAnimated, isInView]);
 
-    return { count, ref: counterRef as React.RefObject<HTMLElement> };
+    return { count, ref: counterRef };
   };
 
   const memberCounter = useCounter(50);
-  const eventCounter = useCounter(10); 
+  const eventCounter = useCounter(10);
   const projectCounter = useCounter(8);
-  const yearCounter = useCounter(7); 
+  const yearCounter = useCounter(7);
 
-  const backgroundY: MotionValue<string> = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
-  const textY: MotionValue<string> = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
+  const textY: MotionValue<string> = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
   const milestones: Milestone[] = useMemo(() => [
-    {
-      year: "2017",
-      title: "Foundation",
-      description: "CSESA was founded by a group of passionate computer science students with a vision to create a supportive community for tech enthusiasts.",
-      icon: "🚀",
-      tech: "Genesis Protocol"
-    },
-    {
-      year: "2018",
-      title: "First Hackathon",
-      description: "Organized our inaugural hackathon 'CodeStorm' with 100+ participants, establishing CSESA as a major tech event organizer.",
-      icon: "⚡",
-      tech: "CodeStorm v1.0"
-    },
-    {
-      year: "2019",
-      title: "Industry Partnerships",
-      description: "Formed strategic partnerships with leading tech companies, providing students with internship and job opportunities.",
-      icon: "🤝",
-      tech: "Partnership Matrix"
-    },
-    {
-      year: "2020",
-      title: "Digital Transformation",
-      description: "Successfully transitioned to virtual events during the pandemic, reaching students globally and expanding our impact.",
-      icon: "🌐",
-      tech: "Virtual Hub 2.0"
-    },
-    {
-      year: "2022",
-      title: "Innovation Lab",
-      description: "Launched our Innovation Lab, providing students with access to cutting-edge technology and mentorship programs.",
-      icon: "🔬",
-      tech: "Lab OS"
-    },
-    {
-      year: "2024",
-      title: "AI Initiative",
-      description: "Introduced AI/ML workshops and projects, keeping pace with the latest technological advancements.",
-      icon: "🤖",
-      tech: "Neural Network"
-    },
-    {
-      year: "2025",
-      title: "Global Reach",
-      description: "Expanded our community to include international students, fostering global collaboration and knowledge sharing.",
-      icon: "🌍",
-      tech: "Global Mesh"
-    }
+    { year: "2017", title: "Foundation", description: "CSESA was founded with a vision to create a supportive tech community.", icon: "🚀", tech: "Genesis Protocol" },
+    { year: "2018", title: "First Hackathon", description: "Organized our inaugural hackathon 'CodeStorm', establishing CSESA as a major event organizer.", icon: "⚡", tech: "CodeStorm v1.0" },
+    { year: "2019", title: "Industry Partnerships", description: "Formed strategic partnerships, providing students with internship and job opportunities.", icon: "🤝", tech: "Partnership Matrix" },
+    { year: "2020", title: "Digital Transformation", description: "Successfully transitioned to virtual events, reaching a global audience.", icon: "🌐", tech: "Virtual Hub 2.0" },
+    { year: "2022", title: "Innovation Lab", description: "Launched our Innovation Lab for access to cutting-edge technology and mentorship.", icon: "🔬", tech: "Lab OS" },
+    { year: "2024", title: "AI Initiative", description: "Introduced AI/ML workshops and projects, keeping pace with technological advancements.", icon: "🤖", tech: "Neural Network" },
+    { year: "2025", title: "Global Reach", description: "Expanded our community internationally, fostering global collaboration.", icon: "🌍", tech: "Global Mesh" },
   ], []);
 
   const values: Value[] = useMemo(() => [
-    {
-      title: "Innovation",
-      description: "We foster creativity and encourage students to think outside the box, pushing the boundaries of what's possible in technology.",
-      icon: "💡",
-      gradient: "from-blue-400 via-blue-500 to-blue-600",
-      pattern: "circuit"
-    },
-    {
-      title: "Collaboration",
-      description: "We believe in the power of teamwork and create opportunities for students to learn from each other and work together.",
-      icon: "🤝",
-      gradient: "from-blue-400 via-blue-500 to-blue-600",
-      pattern: "network"
-    },
-    {
-      title: "Excellence",
-      description: "We strive for the highest standards in everything we do, from our events to our projects and community initiatives.",
-      icon: "⭐",
-      gradient: "from-blue-400 via-blue-500 to-blue-600",
-      pattern: "hexagon"
-    },
-    {
-      title: "Inclusivity",
-      description: "We welcome students from all backgrounds and skill levels, creating an environment where everyone can learn and grow.",
-      icon: "🌈",
-      gradient: "from-blue-400 via-blue-500 to-blue-600",
-      pattern: "mesh"
-    }
+    { title: "Innovation", description: "We foster creativity, pushing the boundaries of what's possible in technology.", icon: "💡", gradient: "from-blue-400 to-blue-600", pattern: "circuit" },
+    { title: "Collaboration", description: "We believe in teamwork and create opportunities for students to learn from each other.", icon: "🤝", gradient: "from-purple-400 to-purple-600", pattern: "network" },
+    { title: "Excellence", description: "We strive for the highest standards in our events, projects, and community initiatives.", icon: "⭐", gradient: "from-green-400 to-green-600", pattern: "hexagon" },
+    { title: "Inclusivity", description: "We welcome students from all backgrounds, creating an environment where everyone can grow.", icon: "🌈", gradient: "from-orange-400 to-orange-600", pattern: "mesh" },
   ], []);
 
-  const GlowCard = ({ children, className = "", glowColor = "blue" }: GlowCardProps) => {
-    const colors = {
+  const GlowCard: React.FC<GlowCardProps> = ({ children, className = "", glowColor = "blue" }) => {
+    const colors: Record<GlowColor, string> = {
       blue: "shadow-blue-500/20 hover:shadow-blue-400/40",
-      purple: "shadow-blue-500/20 hover:shadow-blue-400/40", 
-      green: "shadow-blue-500/20 hover:shadow-blue-400/40",
-      orange: "shadow-blue-500/20 hover:shadow-blue-400/40"
+      purple: "shadow-purple-500/20 hover:shadow-purple-400/40",
+      green: "shadow-green-500/20 hover:shadow-green-400/40",
+      orange: "shadow-orange-500/20 hover:shadow-orange-400/40",
     };
 
     return (
       <motion.div
-        whileHover={{ scale: 1.02, rotateY: 5 }}
+        whileHover={{ scale: 1.02, y: -5 }}
         whileTap={{ scale: 0.98 }}
-        className={`
-          relative bg-gradient-to-br from-slate-900/80 to-slate-800/60
-          backdrop-blur-xl rounded-2xl border border-slate-600/40
-          shadow-2xl ${colors[glowColor]} transition-all duration-500
-          ${className}
-        `}
-        style={{
-          transformStyle: 'preserve-3d',
-          perspective: 1000
-        } as React.CSSProperties} 
+        className={`relative bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-slate-600/40 shadow-2xl ${colors[glowColor]} transition-shadow duration-500 ${className}`}
+        style={{ transformStyle: 'preserve-3d', perspective: 1000 } as React.CSSProperties}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
         {children}
@@ -203,23 +128,22 @@ const About = () => {
     );
   };
 
-  // Binary rain effect component
-  interface Drop { 
+  interface Drop {
     id: number;
     x: number;
     delay: number;
     speed: number;
   }
 
-  const BinaryRain = () => {
-    const [drops, setDrops] = useState<Drop[]>([]); 
+  const BinaryRain: React.FC = () => {
+    const [drops, setDrops] = useState<Drop[]>([]);
 
     useEffect(() => {
-      const newDrops: Drop[] = Array.from({ length: 20 }, (_, i) => ({ 
+      const newDrops: Drop[] = Array.from({ length: 20 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         delay: Math.random() * 5,
-        speed: 20 + Math.random() * 50
+        speed: 20 + Math.random() * 30,
       }));
       setDrops(newDrops);
     }, []);
@@ -231,141 +155,51 @@ const About = () => {
             key={drop.id}
             className="absolute text-green-400 font-mono text-xs"
             style={{ left: `${drop.x}%` }}
-            animate={{
-              y: ['0vh', '100vh'] as [string, string], 
-            }}
-            transition={{
-              duration: drop.speed,
-              repeat: Infinity,
-              ease: 'linear',
-              delay: drop.delay
-            }}
+            animate={{ y: ["-10vh", "110vh"] }}
+            transition={{ duration: drop.speed, repeat: Infinity, ease: "linear", delay: drop.delay }}
           >
-            {Math.random() > 0.5 ? '1' : '0'}
+            {Math.random() > 0.5 ? "1" : "0"}
           </motion.div>
         ))}
       </div>
     );
   };
 
+  // Main component render
   return (
-    <section ref={containerRef} className="relative min-h-screen bg-black text-white overflow-hidden">
+    <div ref={containerRef} className="relative min-h-screen bg-black text-white overflow-x-hidden">
       <BinaryRain />
-
-      {/* Dynamic cursor glow */}
-      <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-50 mix-blend-screen"
-        animate={{
-          x: mousePosition.x - 100,
-          y: mousePosition.y - 100,
-        }}
-        transition={{ type: "tween", ease: "backOut", duration: 0.5 }}
-      >
-        <div className="w-48 h-48 bg-gradient-to-r from-blue-400/20 to-blue-500/20 rounded-full blur-3xl"></div>
+      <motion.div className="fixed top-0 left-0 pointer-events-none z-50 mix-blend-screen" animate={{ x: mousePosition.x - 100, y: mousePosition.y - 100 }} transition={{ type: "tween", ease: "backOut", duration: 0.5 }}>
+        <div className="w-48 h-48 bg-blue-500/20 rounded-full blur-3xl"></div>
       </motion.div>
-
-      {/* Floating geometric shapes */}
-      <motion.div
-        className="absolute top-20 right-20 w-32 h-32"
-        style={{ y: backgroundY }}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-      >
-        <div className="w-full h-full border-2 border-blue-400/30 transform rotate-45 rounded-lg"></div>
-      </motion.div>
-
-      <motion.div
-        className="absolute bottom-40 left-10 w-24 h-24"
-        style={{ y: useTransform(scrollYProgress, [0, 1], ['0px', '200px']) }}
-        animate={{ rotate: -360 }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-      >
-        <div className="w-full h-full border-2 border-blue-400/30 rounded-full"></div>
-      </motion.div>
-
       <div className="relative z-10 max-w-7xl mx-auto px-4">
-        {/* Hero Section */}
-        <motion.div
-          style={{ y: textY }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="text-center py-24"
-        >
-          <motion.div
-            initial={{ opacity: 0, y: -30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="mb-8"
-          >
-            <span className="alegreya-sans-sc-regular inline-block px-4 py-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-full border border-blue-400/30 text-blue-300 text-sm font-mono mb-6">
-              &lt;ABOUT_CSESA/&gt;
-            </span>
-          </motion.div>
-
-          
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.6 }}
-            className="relative alegreya-sans-sc-regular"
-          >
-            <p className="text-lg md:text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed font-light">
-              Empowering the next generation of{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-500 font-semibold">
-                computer scientists
-              </span>{' '}
-              through innovation, collaboration, and excellence
-            </p>
-            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></div>
-          </motion.div>
+        <motion.div style={{ y: textY }} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} className="text-center py-32">
+          <span className="alegreya-sans-sc-regular inline-block px-4 py-2 bg-slate-800/50 rounded-full border border-blue-400/30 text-blue-300 text-sm font-mono mb-6">&lt;ABOUT_CSESA/&gt;</span>
+          <p className="text-lg md:text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed font-light alegreya-sans-sc-regular">Empowering the next generation of <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 font-semibold">computer scientists</span> through innovation, collaboration, and excellence.</p>
         </motion.div>
-
-        {/* Mission Statement with holographic effect */}
-        <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-          className="mb-32"
-        >
+        <motion.div initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.8 }} className="mb-32">
           <GlowCard className="p-12 group" glowColor="blue">
-            <div className="text-center relative">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="relative"
-              >
-                <h2 className="text-4xl md:text-6xl font-black mb-8 relative">
-                  <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                    OUR MISSION
-                  </span>
-                  <motion.div
-                    className=" absolute inset-0 bg-gradient-to-r from-blue-400/30 to-blue-500/30 bg-clip-text text-transparent blur-sm"
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    OUR MISSION
-                  </motion.div>
-                </h2>
-
-                <div className="relative">
-                  <p className="text-xl text-slate-300 leading-relaxed max-w-4xl mx-auto font-light alegreya-sans-sc-regular
-                  ">
-                    To create an <span className="text-blue-400 font-medium">inclusive community</span> where computer science students can learn, grow, and innovate together.
-                    We bridge the gap between <span className="text-blue-400 font-medium">academic learning</span> and <span className="text-blue-400 font-medium">industry practice</span>,
-                    preparing students for successful careers in technology while fostering a culture of collaboration and continuous learning.
-                  </p>
-
-                  {/* Tech decorations */}
-                  <div className="absolute -top-4 -left-4 w-8 h-8 border-l-2 border-t-2 border-blue-400/50"></div>
-                  <div className="absolute -top-4 -right-4 w-8 h-8 border-r-2 border-t-2 border-blue-400/50"></div>
-                  <div className="absolute -bottom-4 -left-4 w-8 h-8 border-l-2 border-b-2 border-blue-400/50"></div>
-                  <div className="absolute -bottom-4 -right-4 w-8 h-8 border-r-2 border-b-2 border-blue-400/50"></div>
-                </div>
-              </motion.div>
-            </div>
+            <h2 className="text-4xl md:text-6xl font-black mb-8 text-center"><span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">OUR MISSION</span></h2>
+            <p className="text-xl text-slate-300 leading-relaxed max-w-4xl mx-auto font-light alegreya-sans-sc-regular text-center">To create an <span className="text-blue-400 font-medium">inclusive community</span> where computer science students can learn, grow, and innovate together. We bridge the gap between <span className="text-blue-400 font-medium">academic learning</span> and <span className="text-blue-400 font-medium">industry practice</span>.</p>
           </GlowCard>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.8 }} className="mb-32">
+          <div className="text-center mb-16"><h2 className="text-4xl md:text-6xl font-black mb-4"><span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">SYSTEM STATUS</span></h2></div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 alegreya-sans-sc-regular">
+            {[
+              { counter: memberCounter, suffix: "+", label: "Active Members", color: "text-blue-400", bg: "blue" as GlowColor },
+              { counter: eventCounter, suffix: "+", label: "Events Hosted", color: "text-purple-400", bg: "purple" as GlowColor },
+              { counter: projectCounter, suffix: "+", label: "Projects Built", color: "text-green-400", bg: "green" as GlowColor },
+              { counter: yearCounter, suffix: "+", label: "Years Strong", color: "text-orange-400", bg: "orange" as GlowColor },
+            ].map((stat, index) => (
+              <motion.div key={index} ref={stat.counter.ref} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: index * 0.1 }}>
+                <GlowCard glowColor={stat.bg} className="p-8 text-center h-full">
+                  <div className={`text-4xl md:text-6xl font-black mb-3 ${stat.color}`}>{stat.counter.count}{stat.suffix}</div>
+                  <div className="text-slate-300 text-lg font-light">{stat.label}</div>
+                </GlowCard>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
 
         {/* Enhanced Statistics with tech styling */}
@@ -410,7 +244,7 @@ const About = () => {
                 transition={{ duration: 0.8, delay: index * 0.1 }}
                 className="group"
               >
-                <GlowCard glowColor={stat.bg} className="p-8 text-center h-full">
+                <GlowCard glowColor={stat.bg as GlowColor} className="p-8 text-center h-full">
                   <motion.div
                     whileHover={{ scale: 1.1 }}
                     className="relative"
@@ -665,7 +499,8 @@ const About = () => {
           </p>
         </motion.div>
       </div>
-    </section>
+    </div>
+
   );
 };
 

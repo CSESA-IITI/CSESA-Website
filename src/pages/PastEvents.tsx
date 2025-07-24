@@ -1,8 +1,21 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 
+interface selectedEvent {
+  id: number;
+  title: string;
+  date: string;
+  location: string;
+  description: string;
+  tags: string[];
+  image: string;
+}
+
+
+
+
 const Events = () => {
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState<selectedEvent | null>(null);
 
   const eventsList = [
     {

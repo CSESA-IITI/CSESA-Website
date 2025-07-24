@@ -1,5 +1,5 @@
 {
-  "homepage": "https://abhishekmane1911.github.io/csesa",
+  "homepage": "https://csesa-iiti.github.io/CSESA-Website/",
   "name": "csesa",
   "private": true,
   "version": "0.0.0",
@@ -9,7 +9,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "@codaworks/react-glow": "^1.0.6",

@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 // Animation variants for the rolling text effect
 const letterVariants = {
   initial: { y: 0 },
-  spin: (i) => ({
+  spin: (i: number) => ({
     y: "-120%",
     transition: { duration: 0.3, ease: "easeInOut", delay: i * 0.03 },
   }),
@@ -13,7 +13,7 @@ const letterVariants = {
 
 const letterVariants2 = {
   initial: { y: "120%" },
-  spin: (i) => ({
+  spin: (i : number) => ({
     y: 0,
     transition: { duration: 0.3, ease: "easeInOut", delay: i * 0.03 },
   }),

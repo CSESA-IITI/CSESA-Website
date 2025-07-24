@@ -1,6 +1,5 @@
 import { motion } from "motion/react";
 import "./Home.css";
-import LightRays from "../components/ui/LightRays";
 
 const Home = () => {
   return (
