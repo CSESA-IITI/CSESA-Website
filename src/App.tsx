@@ -6,15 +6,12 @@ import Projects from "./pages/Projects";
 import About from "./pages/About";
 import Login from "./pages/Login";
 import ContactUs from "./pages/ContactUs";
-// *** CHANGE THIS LINE ***
-import { HashRouter as Router, Route, Routes } from "react-router-dom"; // Use HashRouter
+import { HashRouter as Router, Route, Routes } from "react-router-dom"; 
 import "./App.css";
 
 function App() {
   return (
-    // *** AND THIS LINE ***
-    <Router> {/* This now refers to HashRouter */}
-      {/* Outer container for the whole app, relative for absolute positioning */}
+    <Router> 
       <div className="relative min-h-screen w-screen overflow-hidden bg-black">
         <div className="relative z-10 flex flex-col min-h-screen bg-black text-white">
           <Header />
