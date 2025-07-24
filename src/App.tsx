@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 
 import Footer from "./components/Footer";
 import Header from "./components/Navbar";
@@ -47,7 +47,6 @@ function App() {
                 <Route path="/projects" element={<LazyProjects />} />
                 <Route path="/contact" element={<LazyContact />} />
                 <Route path="/login" element={<LazyLogin />} />
-                <Route path="/loading" element={<LoadingPage />} />
                 <Route path="*" element={<LazyNotFound />} />
                 {/* <Route path="/cardgrid" element={<CardGridPage />} /> */}
               </Routes>
