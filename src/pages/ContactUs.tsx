@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Linkedin, Instagram } from "lucide-react";
 import Magnet from "../components/ui/Magnet";
+import { siteConfig } from "../config/site";
+
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -93,16 +95,16 @@ const ContactUs = () => {
                 <p className="alegreya-sans-sc-regular text-xl">Chat to us</p>
                 <div className="flex items-center space-x-3 text-slate-200">
                   <Mail className="w-6 h-6 text-white" />
-                  <a href="mailto:contact@techcorp.dev" className="hover:text-blue-100 transition-colors duration-300">
-                    contact@techcorp.dev
+                  <a href={`mailto:${siteConfig.email}`} className="hover:text-blue-100 transition-colors duration-300">
+                    {siteConfig.email}
                   </a>
                 </div>
               </div>
               <div className="flex flex-col space-y-2">
                 <p className="alegreya-sans-sc-regular text-xl">Social Media</p>
                 <div className="flex items-center space-x-4">
-                  <a href="https://www.linkedin.com/company/csesa-iit-indore/"><Linkedin className="w-6 h-6 text-white" /></a>
-                  <a href="https://www.instagram.com/csesa_iiti/"><Instagram className="w-6 h-6 text-white" /></a>
+                  <a href={siteConfig.linkedin}><Linkedin className="w-6 h-6 text-white" /></a>
+                  <a href={siteConfig.instagram}><Instagram className="w-6 h-6 text-white" /></a>
                 </div>
               </div>
             </div>

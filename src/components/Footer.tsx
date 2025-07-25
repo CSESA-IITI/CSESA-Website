@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useInView, useAnimation } from "framer-motion";
-import { Mail, Github, Linkedin, Instagram } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import Text3D from "./Text3D";
 import RollingText from "./RollingText";
+import { siteConfig, socialLinks } from "../config/site";
 
 const Footer: React.FC = () => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -50,11 +51,7 @@ const Footer: React.FC = () => {
     { name: "Login", href: "/login" },
   ];
 
-  const socialLinks = [
-    { name: "GitHub", icon: <Github />, href: "https://github.com/your-org" },
-    { name: "LinkedIn", icon: <Linkedin />, href: "https://linkedin.com/company/your-org" },
-    { name: "Instagram", icon: <Instagram />, href: "https://instagram.com/your-org" },
-  ];
+
 
   return (
     <footer ref={ref} className="bg-black text-white font-sans pt-20">
@@ -78,12 +75,12 @@ const Footer: React.FC = () => {
                 See how we can help you, get in touch today.
               </h3>
               <motion.a
-                href="mailto:contact@csesa-iiti.com"
+                href={siteConfig.email}
                 className="inline-flex items-center gap-2 text-indigo-200"
                 whileHover={{ color: '#FFFFFF', x: 5, transition: { duration: 0.2 } }}
               >
                 <Mail size={18} />
-                <span>contact@csesa-iiti.com</span>
+                <span>{siteConfig.email}</span>
               </motion.a>
             </motion.div>
 
@@ -111,7 +108,7 @@ const Footer: React.FC = () => {
                 {socialLinks.map((social) => (
                   <li key={social.name}>
                     <a
-                      href={social.href}
+                      href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-3 text-indigo-200 hover:text-white transition-colors"
