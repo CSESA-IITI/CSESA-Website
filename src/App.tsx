@@ -3,6 +3,7 @@ import { lazy, Suspense, useState, useEffect } from "react";
 import Footer from "./components/Footer";
 import Header from "./components/Navbar";
 import LoadingPage from "./components/Loading";
+import CursorGlow from "./components/CursorGlow";
 
 const LazyHome = lazy(() => import("./pages/Home"));
 const LazyTeam = lazy(() => import("./pages/Team"));
@@ -15,7 +16,6 @@ const LazyNotFound = lazy(() => import("./pages/NotFound"));
 import { HashRouter as Router, Route, Routes } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
-// import CardGridPage from "./pages/CardGrid";
 
 import "./App.css";
 
@@ -38,6 +38,7 @@ function App() {
 
           <main className="flex-grow">
             <AnimatePresence>{isLoading && <LoadingPage />}</AnimatePresence>
+            <CursorGlow />
 
             <Suspense fallback={null}>
               <Routes>
@@ -48,7 +49,6 @@ function App() {
                 <Route path="/contact" element={<LazyContact />} />
                 <Route path="/login" element={<LazyLogin />} />
                 <Route path="*" element={<LazyNotFound />} />
-                {/* <Route path="/cardgrid" element={<CardGridPage />} /> */}
               </Routes>
             </Suspense>
           </main>

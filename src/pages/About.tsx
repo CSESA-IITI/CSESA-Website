@@ -1,11 +1,7 @@
 import { motion, useScroll, useTransform, useInView, MotionValue } from "framer-motion";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 
-// Define component-level types
-interface MousePosition {
-  x: number;
-  y: number;
-}
+
 
 interface Milestone {
   year: string;
@@ -33,7 +29,6 @@ interface GlowCardProps {
 }
 
 const About: React.FC = () => {
-  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -41,21 +36,6 @@ const About: React.FC = () => {
     offset: ["start start", "end end"],
   });
 
-  useEffect(() => {
-    let rafId: number | null = null;
-    const handleMouseMove = (e: MouseEvent) => {
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        setMousePosition({ x: e.clientX, y: e.clientY });
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, []);
 
   const useCounter = (end: number, duration: number = 2000) => {
     const [count, setCount] = useState<number>(0);
@@ -128,50 +108,12 @@ const About: React.FC = () => {
     );
   };
 
-  interface Drop {
-    id: number;
-    x: number;
-    delay: number;
-    speed: number;
-  }
-
-  const BinaryRain: React.FC = () => {
-    const [drops, setDrops] = useState<Drop[]>([]);
-
-    useEffect(() => {
-      const newDrops: Drop[] = Array.from({ length: 20 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        delay: Math.random() * 5,
-        speed: 20 + Math.random() * 30,
-      }));
-      setDrops(newDrops);
-    }, []);
-
-    return (
-      <div className="fixed inset-0 pointer-events-none opacity-10 z-0">
-        {drops.map((drop) => (
-          <motion.div
-            key={drop.id}
-            className="absolute text-green-400 font-mono text-xs"
-            style={{ left: `${drop.x}%` }}
-            animate={{ y: ["-10vh", "110vh"] }}
-            transition={{ duration: drop.speed, repeat: Infinity, ease: "linear", delay: drop.delay }}
-          >
-            {Math.random() > 0.5 ? "1" : "0"}
-          </motion.div>
-        ))}
-      </div>
-    );
-  };
+ 
 
   // Main component render
   return (
     <div ref={containerRef} className="relative min-h-screen bg-black text-white overflow-x-hidden">
-      <BinaryRain />
-      <motion.div className="fixed top-0 left-0 pointer-events-none z-50 mix-blend-screen" animate={{ x: mousePosition.x - 100, y: mousePosition.y - 100 }} transition={{ type: "tween", ease: "backOut", duration: 0.5 }}>
-        <div className="w-48 h-48 bg-blue-500/20 rounded-full blur-3xl"></div>
-      </motion.div>
+      
       <div className="relative z-10 max-w-7xl mx-auto px-4">
         <motion.div style={{ y: textY }} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, ease: "easeOut" }} className="text-center py-32">
           <span className="alegreya-sans-sc-regular inline-block px-4 py-2 bg-slate-800/50 rounded-full border border-blue-400/30 text-blue-300 text-sm font-mono mb-6">&lt;ABOUT_CSESA/&gt;</span>
