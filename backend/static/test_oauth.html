@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth Test</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <h1>Google OAuth Test</h1>
+    <p>Testing OAuth with Client ID: 839760133256-tmsv6s42s19b9a7f8hc15h69564rmhud.apps.googleusercontent.com</p>
+    
+    <div id="g_id_onload"
+         data-client_id="839760133256-tmsv6s42s19b9a7f8hc15h69564rmhud.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin"></div>
+
+    <script>
+        function handleCredentialResponse(response) {
+            console.log("Encoded JWT ID token: " + response.credential);
+            
+            try {
+                // Decode the JWT token to see user info
+                const payload = JSON.parse(atob(response.credential.split('.')[1]));
+                console.log("User info:", payload);
+                
+                document.getElementById('result').innerHTML = 
+                    '<h3>✅ Success!</h3>' +
+                    '<p><strong>Email:</strong> ' + payload.email + '</p>' +
+                    '<p><strong>Name:</strong> ' + payload.name + '</p>' +
+                    '<p><strong>Domain:</strong> ' + payload.email.split('@')[1] + '</p>' +
+                    '<hr>' +
+                    '<h4>Full Token Payload:</h4>' +
+                    '<pre>' + JSON.stringify(payload, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('Error decoding token:', error);
+                document.getElementById('result').innerHTML = 
+                    '<h3>❌ Error decoding token</h3>' +
+                    '<p>' + error.message + '</p>';
+            }
+        }
+        
+        // Add error handling
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript error:', e);
+            document.getElementById('result').innerHTML = 
+                '<h3>❌ JavaScript Error</h3>' +
+                '<p>' + e.message + '</p>';
+        });
+    </script>
+    
+    <div id="result" style="margin-top: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 5px;"></div>
+    
+    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+        <h3>Debug Information:</h3>
+        <p><strong>Current URL:</strong> <span id="current-url"></span></p>
+        <p><strong>Expected Origin:</strong> http://localhost:8000</p>
+        <p><strong>Client ID:</strong> 839760133256-tmsv6s42s19b9a7f8hc15h69564rmhud.apps.googleusercontent.com</p>
+    </div>
+    
+    <script>
+        document.getElementById('current-url').textContent = window.location.href;
+    </script>
+</body>
+</html>
