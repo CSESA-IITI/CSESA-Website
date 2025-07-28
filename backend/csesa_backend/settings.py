@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
 
     # Third-party apps
     'rest_framework',
@@ -92,12 +93,8 @@ WSGI_APPLICATION = "csesa_backend.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'csesa_db', # Your database name
-        'USER': 'csesa_user', # Your PostgreSQL username
-        'PASSWORD': 'csesa_abhishek_password', # The password you created
-        'HOST': 'localhost', # Or your DB host
-        'PORT': '5432',      # Default PostgreSQL port
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 CORS_ALLOW_CREDENTIALS = True
@@ -195,6 +192,11 @@ LOGIN_REDIRECT_URL = '/'
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
+        "APP": {
+            "client_id": GOOGLE_OAUTH2_CLIENT_ID,
+            "secret": GOOGLE_OAUTH2_CLIENT_SECRET,
+            "key": "",
+        },
         "SCOPE": [
             "profile",
             "email",

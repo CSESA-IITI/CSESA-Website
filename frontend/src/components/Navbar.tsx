@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import RollingText from "./RollingText";
-import { useAuth } from "../contexts/AuthContext";
 import GoogleLoginButton from "./GoogleLoginButton";
 import UserProfile from "./UserProfile";
 
@@ -10,7 +9,7 @@ const FuturisticNavbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("Home");
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = document.cookie.includes("sessionid");
 
   const navItems = [
     { name: "Home", href: "/" },

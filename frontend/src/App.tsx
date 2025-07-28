@@ -4,7 +4,6 @@ import Footer from "./components/Footer";
 import Header from "./components/Navbar";
 import LoadingPage from "./components/Loading";
 import CursorGlow from "./components/CursorGlow";
-import { AuthProvider } from "./contexts/AuthContext";
 
 const LazyHome = lazy(() => import("./pages/Home"));
 const LazyTeam = lazy(() => import("./pages/Team"));
@@ -33,35 +32,33 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <Router>
-        <div className="relative min-h-screen w-screen overflow-hidden bg-white">
-          <div className="relative z-10 flex flex-col min-h-screen bg-white text-white">
-            <Header />
+    <Router>
+      <div className="relative min-h-screen w-screen overflow-hidden bg-white">
+        <div className="relative z-10 flex flex-col min-h-screen bg-white text-white">
+          <Header />
 
-            <main className="flex-grow">
-              <AnimatePresence>{isLoading && <LoadingPage />}</AnimatePresence>
-              <CursorGlow />
+          <main className="flex-grow">
+            <AnimatePresence>{isLoading && <LoadingPage />}</AnimatePresence>
+            <CursorGlow />
 
-              <Suspense fallback={null}>
-                <Routes>
-                  <Route path="/" element={<LazyHome />} />
-                  <Route path="/team" element={<LazyTeam />} />
-                  <Route path="/events" element={<LazyEvents />} />
-                  <Route path="/projects" element={<LazyProjects />} />
-                  <Route path="/contact" element={<LazyContact />} />
-                  <Route path="/login" element={<LazyLogin />} />
-                  <Route path="/auth/callback" element={<LazyAuthCallback />} />
-                  <Route path="/dummy" element={<LazyDummy />} />
-                  <Route path="*" element={<LazyNotFound />} />
-                </Routes>
-              </Suspense>
-            </main>
-            <Footer />
-          </div>
+            <Suspense fallback={null}>
+              <Routes>
+                <Route path="/" element={<LazyHome />} />
+                <Route path="/team" element={<LazyTeam />} />
+                <Route path="/events" element={<LazyEvents />} />
+                <Route path="/projects" element={<LazyProjects />} />
+                <Route path="/contact" element={<LazyContact />} />
+                <Route path="/login" element={<LazyLogin />} />
+                <Route path="/auth/callback" element={<LazyAuthCallback />} />
+                <Route path="/dummy" element={<LazyDummy />} />
+                <Route path="*" element={<LazyNotFound />} />
+              </Routes>
+            </Suspense>
+          </main>
+          <Footer />
         </div>
-      </Router>
-    </AuthProvider>
+      </div>
+    </Router>
   );
 }
 

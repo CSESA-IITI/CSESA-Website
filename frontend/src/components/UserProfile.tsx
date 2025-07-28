@@ -1,26 +1,33 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../contexts/AuthContext';
 
 interface UserProfileProps {
   className?: string;
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({ className = '' }) => {
-  const { user, logout, isAuthenticated } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const isAuthenticated = document.cookie.includes("sessionid");
 
-  if (!isAuthenticated || !user) {
+  if (!isAuthenticated) {
     return null;
   }
+
+  const user = {
+    name: 'John Doe',
+    email: 'cse240001043@iiti.ac.in',
+    picture: 'https://lh3.googleusercontent.com/a/ACg8ocJ-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F-Z_F=s96-c',
+    role: 'ASSOCIATE'
+  };
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
   const handleLogout = () => {
-    logout();
-    setIsDropdownOpen(false);
+    // This will be replaced with a proper logout mechanism
+    document.cookie = "sessionid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    window.location.reload();
   };
 
   return (
