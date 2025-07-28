@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'users',
     'projects',
     'events',
+    'accounts',
+    'contacts',
 ]
 
 MIDDLEWARE = [
@@ -118,7 +120,7 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 
 
@@ -213,3 +215,7 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_VERIFICATION = "none"
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+CSESA_EMAIL = 'csesaiiti@gmail.com' # Replace with your actual CSESA email address

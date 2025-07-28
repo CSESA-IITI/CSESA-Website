@@ -26,3 +26,7 @@ class UserManagementViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all().order_by('first_name')
     permission_classes = [IsPresident]
     serializer_class = UserSerializer
+
+class TeamViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = CustomUser.objects.filter(role__in=['PRESIDENT', 'DOMAIN_HEAD', 'COORDINATOR', 'ASSOCIATE'])
+    serializer_class = UserSerializer

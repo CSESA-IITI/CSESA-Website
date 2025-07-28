@@ -33,12 +33,15 @@ const ContactUs = () => {
   };
 
   // FIX 3: Updated the event type for form submission.
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus("Sending...");
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Form Submitted:", formData);
+    try {
+      await apiClient.post("/api/contact/", {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+      });
       setStatus("Message Sent!");
       setFormData({
         name: "",
@@ -49,7 +52,10 @@ const ContactUs = () => {
         agree: false,
       });
       setTimeout(() => setStatus(""), 3000);
-    }, 2000);
+    } catch (error) {
+      setStatus("Failed to send message.");
+      console.error("Error submitting form:", error);
+    }
   };
 
   // Animation variants

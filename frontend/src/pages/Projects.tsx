@@ -1,121 +1,43 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import apiClient from "../apiClient";
 
 interface Project {
   id: number;
-  title: string;
-  category: "AI/ML" | "Web Development" | "VR/AR" | "Mobile Development" | "Blockchain" | "IoT"; 
+  name: string;
+  domain: string;
   status: "completed" | "in-progress" | "planning";
+  short_description: string;
   description: string;
-  longDescription: string;
-  technologies: string[];
-  github: string | null; 
-  demo: string | null; 
+  technologies_used: string[];
+  github_link: string | null;
+  project_link: string | null;
   image: string;
-  team: string[];
+  members: string[];
   achievements: string[];
-  timeline: string;
+  start_date: string;
+  end_date: string;
 }
 
 const Projects = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [filterCategory, setFilterCategory] = useState<Project['category'] | "all">("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
 
-
-  const projects: Project[] = [
-    {
-      id: 1,
-      title: "AI Study Buddy",
-      category: "AI/ML",
-      status: "completed",
-      description: "An intelligent tutoring system that helps students learn programming concepts through personalized AI assistance.",
-      longDescription: "AI Study Buddy is a comprehensive learning platform that uses machine learning algorithms to adapt to each student's learning style. The system analyzes coding patterns, identifies knowledge gaps, and provides personalized recommendations for improvement. Built with React, Python Flask, and TensorFlow, it has helped over 200 students improve their programming skills.",
-      technologies: ["React", "Python", "TensorFlow", "Flask", "PostgreSQL"],
-      github: "https://github.com/csesa/ai-study-buddy",
-      demo: "https://ai-study-buddy.csesa.org",
-      image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&h=300&fit=crop",
-      team: ["Alex Chen", "Sarah Johnson", "Emily Zhang"],
-      achievements: ["Winner of University Innovation Award", "1000+ active users", "Featured in Tech News"],
-      timeline: "Sep 2024 - Dec 2024"
-    },
-    {
-      id: 2,
-      title: "Campus Connect",
-      category: "Web Development",
-      status: "in-progress",
-      description: "A social networking platform designed specifically for university students to connect, collaborate, and share resources.",
-      longDescription: "Campus Connect aims to bridge the gap between students across different departments and year levels. The platform features study groups, project collaboration tools, event management, and a resource sharing system. Currently in beta testing with 500+ student users.",
-      technologies: ["Next.js", "Node.js", "MongoDB", "Socket.io", "AWS"],
-      github: "https://github.com/csesa/campus-connect",
-      demo: "https://beta.campus-connect.edu",
-      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&h=300&fit=crop",
-      team: ["Marcus Rodriguez", "Lisa Wang", "David Kim"],
-      achievements: ["500+ beta users", "Positive feedback from students", "Partnership with Student Affairs"],
-      timeline: "Jan 2025 - Ongoing"
-    },
-    {
-      id: 3,
-      title: "CodeLab VR",
-      category: "VR/AR",
-      status: "completed",
-      description: "Virtual reality environment for learning programming concepts through immersive 3D visualizations.",
-      longDescription: "CodeLab VR revolutionizes programming education by creating immersive virtual environments where students can visualize data structures, algorithms, and code execution in 3D space. The project won first place in the National VR Education Hackathon.",
-      technologies: ["Unity", "C#", "Oculus SDK", "Blender", "Firebase"],
-      github: "https://github.com/csesa/codelab-vr",
-      demo: "https://codelab-vr.csesa.org",
-      image: "https://images.unsplash.com/photo-1592478411213-6153e4ebc696?w=500&h=300&fit=crop",
-      team: ["Emily Zhang", "Alex Chen", "Marcus Rodriguez"],
-      achievements: ["1st Place National VR Hackathon", "Featured in VR Education Journal", "Patent Application Filed"],
-      timeline: "Mar 2024 - Aug 2024"
-    },
-    {
-      id: 4,
-      title: "EcoTrack",
-      category: "Mobile Development",
-      status: "completed",
-      description: "Mobile app for tracking and reducing carbon footprint with gamification elements and community challenges.",
-      longDescription: "EcoTrack motivates users to adopt sustainable practices through gamification and social features. Users can track their daily activities, earn points for eco-friendly choices, and participate in community challenges. The app has been downloaded over 5000 times.",
-      technologies: ["React Native", "Firebase", "Node.js", "Google Maps API"],
-      github: "https://github.com/csesa/ecotrack",
-      demo: "https://apps.apple.com/ecotrack",
-      image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500&h=300&fit=crop",
-      team: ["Sarah Johnson", "David Kim", "Lisa Wang"],
-      achievements: ["5000+ downloads", "4.8 star rating", "Featured in App Store"],
-      timeline: "Jun 2024 - Oct 2024"
-    },
-    {
-      id: 5,
-      title: "Blockchain Voting System",
-      category: "Blockchain",
-      status: "in-progress",
-      description: "Secure and transparent voting system using blockchain technology for student government elections.",
-      longDescription: "A decentralized voting platform that ensures election integrity and transparency. The system uses smart contracts to automate vote counting and provides real-time results while maintaining voter anonymity. Currently being tested for student government elections.",
-      technologies: ["Solidity", "Web3.js", "React", "Ethereum", "IPFS"],
-      github: "https://github.com/csesa/blockchain-voting",
-      demo: "https://vote.csesa.org",
-      image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=500&h=300&fit=crop",
-      team: ["Marcus Rodriguez", "Alex Chen", "David Kim"],
-      achievements: ["Successful pilot test", "Security audit passed", "Collaboration with Student Government"],
-      timeline: "Nov 2024 - Ongoing"
-    },
-    {
-      id: 6,
-      title: "Smart Library System",
-      category: "IoT",
-      status: "planning",
-      description: "IoT-based library management system with automated book tracking and smart study space allocation.",
-      longDescription: "An intelligent library system that uses IoT sensors to track book locations, monitor study space occupancy, and provide real-time availability updates. The system aims to optimize library resources and improve student experience.",
-      technologies: ["Arduino", "Raspberry Pi", "Python", "React", "LoRaWAN"],
-      github: "https://github.com/csesa/smart-library",
-      demo: null,
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=300&fit=crop",
-      team: ["Emily Zhang", "Sarah Johnson", "Lisa Wang"],
-      achievements: ["Approved by Library Committee", "Funding secured", "Partnership with IoT Lab"],
-      timeline: "Mar 2025 - Planned"
-    }
-  ];
-
-  const categories: Array<Project['category'] | "all"> = ["all", "AI/ML", "Web Development", "VR/AR", "Mobile Development", "Blockchain", "IoT"];
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await apiClient.get("/api/projects/");
+        setProjects(response.data);
+        const uniqueCategories = Array.from(new Set(response.data.map((p: Project) => p.domain)));
+        setCategories(["all", ...uniqueCategories]);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   const statusColors: Record<Project['status'], string> = {
     completed: "bg-green-500",
@@ -125,7 +47,7 @@ const Projects = () => {
 
   const filteredProjects = filterCategory === "all"
     ? projects
-    : projects.filter(project => project.category === filterCategory);
+    : projects.filter(project => project.domain === filterCategory);
 
   return (
     <section className="relative min-h-screen bg-black text-white px-4 py-20 overflow-hidden">
@@ -203,7 +125,7 @@ const Projects = () => {
 
         {/* Projects Grid */}
         <motion.div
-          layout 
+          layout
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16"
         >
           <AnimatePresence>
@@ -224,7 +146,7 @@ const Projects = () => {
                   <div className="relative overflow-hidden h-48">
                     <img
                       src={project.image}
-                      alt={project.title}
+                      alt={project.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute top-4 left-4 flex gap-2">
@@ -233,7 +155,7 @@ const Projects = () => {
                         {project.status.replace("-", " ").toUpperCase()}
                       </span>
                       <span className="px-3 py-1 bg-black/70 text-white rounded-full text-xs font-semibold">
-                        {project.category}
+                        {project.domain}
                       </span>
                     </div>
                   </div>
@@ -241,15 +163,15 @@ const Projects = () => {
                   {/* Project Info */}
                   <div className="p-6">
                     <h3 className="text-lg font-bold mb-3 text-white group-hover:text-blue-400 transition-colors vamos">
-                      {project.title}
+                      {project.name}
                     </h3>
                     <p className="text-gray-300 mb-4 line-clamp-3 alegreya-sans-sc-regular">
-                      {project.description}
+                      {project.short_description}
                     </p>
 
                     {/* Technologies */}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {project.technologies.slice(0, 3).map((tech, idx) => (
+                      {project.technologies_used.slice(0, 3).map((tech, idx) => (
                         <span
                           key={idx}
                           className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs border border-blue-500/30"
@@ -257,9 +179,9 @@ const Projects = () => {
                           {tech}
                         </span>
                       ))}
-                      {project.technologies.length > 3 && (
+                      {project.technologies_used.length > 3 && (
                         <span className="px-3 py-1 bg-gray-700/50 text-gray-300 rounded-full text-xs">
-                          +{project.technologies.length - 3}
+                          +{project.technologies_used.length - 3}
                         </span>
                       )}
                     </div>
@@ -267,7 +189,7 @@ const Projects = () => {
                     {/* Team Members */}
                     <div className="flex items-center justify-between">
                       <div className="flex -space-x-2">
-                        {project.team.slice(0, 3).map((member, idx) => (
+                        {project.members.slice(0, 3).map((member, idx) => (
                           <div
                             key={idx}
                             className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 flex items-center justify-center text-xs font-bold border-2 border-gray-900"
@@ -275,9 +197,9 @@ const Projects = () => {
                             {member.split(" ").map(n => n[0]).join("")}
                           </div>
                         ))}
-                        {project.team.length > 3 && (
+                        {project.members.length > 3 && (
                           <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs font-bold border-2 border-gray-900">
-                            +{project.team.length - 3}
+                            +{project.members.length - 3}
                           </div>
                         )}
                       </div>
@@ -325,8 +247,8 @@ const Projects = () => {
               {/* Project Header */}
               <div className="relative h-64 overflow-hidden rounded-t-2xl">
                 <img
-                  src={selectedProject.image} 
-                  alt={selectedProject.title} 
+                  src={selectedProject.image}
+                  alt={selectedProject.name}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -336,10 +258,10 @@ const Projects = () => {
                       {selectedProject.status.replace("-", " ").toUpperCase()}
                     </span>
                     <span className="px-3 py-1 bg-black/70 text-white rounded-full text-xs font-semibold">
-                      {selectedProject.category}
+                      {selectedProject.domain}
                     </span>
                   </div>
-                  <h2 className="text-3xl font-bold text-white">{selectedProject.title}</h2>
+                  <h2 className="text-3xl font-bold text-white">{selectedProject.name}</h2>
                 </div>
               </div>
 
@@ -347,20 +269,20 @@ const Projects = () => {
                 {/* Project Description */}
                 <div className="mb-8">
                   <h3 className="text-xl font-bold text-white mb-4">About the Project</h3>
-                  <p className="text-gray-300 leading-relaxed">{selectedProject.longDescription}</p>
+                  <p className="text-gray-300 leading-relaxed">{selectedProject.description}</p>
                 </div>
 
                 {/* Timeline */}
                 <div className="mb-8">
                   <h3 className="text-xl font-bold text-white mb-4">Timeline</h3>
-                  <p className="text-gray-300">{selectedProject.timeline}</p>
+                  <p className="text-gray-300">{selectedProject.start_date} - {selectedProject.end_date}</p>
                 </div>
 
                 {/* Technologies */}
                 <div className="mb-8">
                   <h3 className="text-xl font-bold text-white mb-4">Technologies Used</h3>
                   <div className="flex flex-wrap gap-3">
-                    {selectedProject.technologies.map((tech, idx) => (
+                    {selectedProject.technologies_used.map((tech, idx) => (
                       <span
                         key={idx}
                         className="px-4 py-2 bg-blue-500/20 text-blue-300 rounded-full text-sm border border-blue-500/30"
@@ -375,7 +297,7 @@ const Projects = () => {
                 <div className="mb-8">
                   <h3 className="text-xl font-bold text-white mb-4">Team Members</h3>
                   <div className="flex flex-wrap gap-4">
-                    {selectedProject.team.map((member, idx) => (
+                    {selectedProject.members.map((member, idx) => (
                       <div key={idx} className="flex items-center gap-2">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold">
                           {member.split(" ").map(n => n[0]).join("")}
@@ -401,9 +323,9 @@ const Projects = () => {
 
                 {/* Action Buttons */}
                 <div className="flex gap-4">
-                  {selectedProject.github && ( 
+                  {selectedProject.github_link && (
                     <motion.a
-                      href={selectedProject.github}
+                      href={selectedProject.github_link}
                       target="_blank"
                       rel="noopener noreferrer"
                       whileHover={{ scale: 1.05 }}
@@ -413,9 +335,9 @@ const Projects = () => {
                       <span>View Code</span>
                     </motion.a>
                   )}
-                  {selectedProject.demo && ( 
+                  {selectedProject.project_link && (
                     <motion.a
-                      href={selectedProject.demo}
+                      href={selectedProject.project_link}
                       target="_blank"
                       rel="noopener noreferrer"
                       whileHover={{ scale: 1.05 }}
