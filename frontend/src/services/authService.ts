@@ -18,42 +18,28 @@ export interface AuthResponse {
 class AuthService {
   // Initialize Google login
   async initiateGoogleLogin(redirectPath: string = '/'): Promise<void> {
-    console.log('=== AuthService: Initiating Google login ===');
-    console.log('Redirect path:', redirectPath);
-    
     try {
       // Generate a random state parameter for CSRF protection
       const state = window.crypto.randomUUID();
-      console.log('Generated state:', state);
-      
-      // Store the state in localStorage to verify it later
       localStorage.setItem('oauth_state', state);
-      console.log('Stored state in localStorage');
-      
-      const redirectUri = `${window.location.origin}/CSESA-Website/auth/callback`;
-      console.log('Using redirect_uri:', redirectUri);
-      
+
+      const redirectUri = `${window.location.origin}/auth/callback`;
       const stateData = {
         state,
-        from: window.location.pathname,
-        redirect_uri: `${window.location.origin}/CSESA-Website`
+        from: redirectPath,
+        redirect_uri: redirectUri
       };
-      console.log('State data:', stateData);
-      
-      // Get the Google OAuth URL from the backend with the current path as redirect_uri
-      console.log('Fetching OAuth URL from backend...');
+
+      // Get the Google OAuth URL from the backend
       const response = await apiClient.get('/api/auth/google/', {
         params: {
           redirect_uri: redirectUri,
           state: JSON.stringify(stateData)
         }
       });
-      
-      console.log('Received auth URL from backend:', response.data);
+
       const { auth_url } = response.data;
-      
       // Redirect to Google's OAuth consent screen
-      console.log('Redirecting to Google OAuth consent screen...');
       window.location.href = auth_url;
     } catch (error) {
       console.error('Login initiation error:', error);
@@ -62,49 +48,39 @@ class AuthService {
   }
 
   // Handle the OAuth callback with the authorization code
-  async handleGoogleCallback(code: string, state: string): Promise<AuthResponse> {
-    console.log('=== AuthService: Handling Google callback ===');
-    console.log('Code:', code);
-    console.log('State:', state);
-    
+  async handleGoogleCallback(code: string, stateStr: string): Promise<AuthResponse> {
     try {
+      const state = JSON.parse(stateStr);
       // Get the stored state from localStorage
       const storedState = localStorage.getItem('oauth_state');
-      console.log('Stored state from localStorage:', storedState);
-      
+
       // Verify the state parameter to prevent CSRF attacks
-      if (!storedState || state !== storedState) {
-        console.error('State mismatch or missing state:', { storedState, receivedState: state });
+      if (!storedState || state.state !== storedState) {
         throw new Error('Invalid state parameter');
       }
-      
+
       // Clean up the stored state
       localStorage.removeItem('oauth_state');
-      console.log('Removed state from localStorage');
-      
+
       // Prepare the request data
-      const requestData = { 
+      const requestData = {
         code,
-        state: JSON.stringify({ state, redirect_uri: window.location.origin })
+        state: stateStr
       };
-      console.log('Sending request to backend:', requestData);
-      
+
       // Send the authorization code to the backend to exchange for tokens
       const response = await apiClient.post('/api/auth/google/callback/', requestData);
-      console.log('Received response from backend:', response.data);
-      
+
       const { access_token, refresh_token, user, redirect_uri } = response.data;
-      
+
       if (!access_token || !user) {
         throw new Error('Invalid response from server: missing access token or user data');
       }
-      
-      console.log('Storing auth tokens and user data...');
+
       // Store the tokens and user data
       this.setAuthTokens(access_token, refresh_token);
       this.setUser(user);
-      
-      console.log('Auth successful, user:', user);
+
       // Return the response with the redirect URI
       return { ...response.data, redirect_uri };
     } catch (error) {

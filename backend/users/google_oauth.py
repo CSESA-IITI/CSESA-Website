@@ -74,27 +74,14 @@ def google_oauth_login(request):
     This will return the Google OAuth URL with a state parameter
     """
     from urllib.parse import urlencode
-    import secrets
     import json
-    
+
     # Google OAuth configuration
     client_id = settings.GOOGLE_OAUTH2_CLIENT_ID
-    redirect_uri = 'http://localhost:5173/CSESA-Website/auth/callback'  # Frontend callback URL
+    redirect_uri = request.query_params.get('redirect_uri')
+    state = request.query_params.get('state')
     scope = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid'
-    
-    # Generate a secure random string for the state parameter
-    state = secrets.token_urlsafe(32)
-    
-    # Store the state in the session
-    request.session['oauth_state'] = state
-    
-    # Include the frontend URL in the state to know where to redirect back to
-    frontend_redirect = request.query_params.get('redirect_uri', '/')
-    state_data = {
-        'state': state,
-        'redirect_uri': frontend_redirect
-    }
-    
+
     # Build the authorization URL
     params = {
         'client_id': client_id,
@@ -103,11 +90,12 @@ def google_oauth_login(request):
         'redirect_uri': redirect_uri,
         'access_type': 'offline',
         'prompt': 'select_account',
-        'state': json.dumps(state_data),
+        'state': state,
     }
-    
+
     auth_url = f'https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}'
     return Response({'auth_url': auth_url}, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -115,100 +103,77 @@ def google_oauth_callback(request):
     """
     Handle Google OAuth callback with authorization code
     """
+    import json
     try:
         code = request.data.get('code')
-        state = request.data.get('state')
-        
+        state_str = request.data.get('state')
+        state = json.loads(state_str)
+        redirect_uri = state.get('redirect_uri')
+
         if not code:
             return Response(
-                {'error': 'Authorization code is required'}, 
+                {'error': 'Authorization code is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-            
-        # Verify state parameter to prevent CSRF
-        if not state:
-            return Response(
-                {'error': 'State parameter is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-            
-        # Parse the state data
-        try:
-            state_data = json.loads(state)
-            stored_state = request.session.pop('oauth_state', None)
-            
-            if not stored_state or state_data.get('state') != stored_state:
-                return Response(
-                    {'error': 'Invalid state parameter'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-                
-            redirect_uri = state_data.get('redirect_uri', '/')
-            
-        except (json.JSONDecodeError, AttributeError):
-            return Response(
-                {'error': 'Invalid state format'},
-                status=status.HTTP_400_BACKEND
-            )
-        
+
         # Exchange authorization code for tokens
         token_url = 'https://oauth2.googleapis.com/token'
         data = {
             'code': code,
             'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
             'client_secret': settings.GOOGLE_OAUTH2_CLIENT_SECRET,
-            'redirect_uri': 'http://localhost:5173/CSESA-Website/auth/callback',
+            'redirect_uri': redirect_uri,
             'grant_type': 'authorization_code',
         }
-        
+
         response = requests.post(token_url, data=data)
         token_data = response.json()
-        
+
         if response.status_code != 200:
             return Response(
                 {'error': 'Failed to exchange code for tokens', 'details': token_data},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         # Get user info using access token
         user_info_url = 'https://www.googleapis.com/oauth2/v2/userinfo'
         headers = {
             'Authorization': f'Bearer {token_data["access_token"]}'
         }
         user_info_response = requests.get(user_info_url, headers=headers)
-        
+
         if user_info_response.status_code != 200:
             return Response(
                 {'error': 'Failed to fetch user info', 'details': user_info_response.text},
                 status=status.HTTP_400_BAD_REQUEST
             )
-            
+
         user_data = user_info_response.json()
         user_email = user_data.get('email', '')
         user_name = user_data.get('name', '')
-        
+
         if not user_email:
             return Response(
-                {'error': 'Email not provided by Google'}, 
+                {'error': 'Email not provided by Google'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-            
+
         # Validate organization domain
         email_domain = user_email.split('@')[-1].lower()
         allowed_domain = getattr(settings, 'ALLOWED_ORGANIZATION_DOMAIN', '').lower()
-        
+
         if not allowed_domain:
             return Response(
-                {'error': 'Organization domain not configured'}, 
+                {'error': 'Organization domain not configured'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-            
+
         if email_domain != allowed_domain:
             return Response(
-                {'error': f'Only users from {allowed_domain} are allowed to login'}, 
+                {'error': f'Only users from {allowed_domain} are allowed to login'},
                 status=status.HTTP_403_FORBIDDEN
             )
-            
+
         # Get or create user
         try:
             user = User.objects.get(email=user_email)
@@ -233,11 +198,11 @@ def google_oauth_callback(request):
                 role=User.Role.ASSOCIATE,  # Default role
                 is_onboarded=False  # User needs to complete profile
             )
-            
+
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
-        
+
         # Prepare response data
         response_data = {
             'access_token': access_token,
@@ -252,14 +217,14 @@ def google_oauth_callback(request):
                 'role': user.role,
                 'is_onboarded': user.is_onboarded,
             },
-            'redirect_uri': redirect_uri
+            'redirect_uri': state.get('from')
         }
-        
+
         return Response(response_data, status=status.HTTP_200_OK)
-        
+
     except Exception as e:
         return Response(
-            {'error': f'Authentication failed: {str(e)}'}, 
+            {'error': f'Authentication failed: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 

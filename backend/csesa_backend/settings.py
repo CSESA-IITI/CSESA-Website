@@ -100,16 +100,16 @@ DATABASES = {
         'PORT': '5432',      # Default PostgreSQL port
     }
 }
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8000',
-    'http://localhost:5173',
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127.0.0.1:\d+$",
 ]
 
 # Allow credentials for OAuth
 CORS_ALLOW_CREDENTIALS = True
 
 # Allow all headers and methods for OAuth
-CORS_ALLOW_ALL_ORIGINS = True  # Only for development
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -176,8 +176,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Google OAuth Settings
-GOOGLE_OAUTH2_CLIENT_ID = ""
-GOOGLE_OAUTH2_CLIENT_SECRET = ""
+# IMPORTANT: Replace with your actual Google OAuth credentials
+GOOGLE_OAUTH2_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"
+GOOGLE_OAUTH2_CLIENT_SECRET = "YOUR_GOOGLE_CLIENT_SECRET"
+
 
 # Organization domain restriction (replace with your organization's domain)
 ALLOWED_ORGANIZATION_DOMAIN = "iiti.ac.in"
