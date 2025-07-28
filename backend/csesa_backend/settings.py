@@ -185,33 +185,29 @@ GOOGLE_OAUTH2_CLIENT_SECRET = "YOUR_GOOGLE_CLIENT_SECRET"
 ALLOWED_ORGANIZATION_DOMAIN = "iiti.ac.in"
 
 # Django Allauth settings
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-]
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
 
 SITE_ID = 1
+LOGIN_REDIRECT_URL = '/'
 
 SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
+    "google": {
+        "SCOPE": [
+            "profile",
+            "email",
         ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
+        "AUTH_PARAMS": {
+            "access_type": "online",
         },
-        'OAUTH_PKCE_ENABLED': True,
     }
 }
 
-# Account settings
+SOCIALACCOUNT_ADAPTER = "users.adapters.GoogleSocialAccountAdapter"
+
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-SOCIALACCOUNT_EMAIL_REQUIRED = True
-SOCIALACCOUNT_AUTO_SIGNUP = False  # We'll handle signup manually with org validation
-
-# Custom social account adapter for organization validation
-SOCIALACCOUNT_ADAPTER = 'users.google_oauth.GoogleSocialAccountAdapter'
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_VERIFICATION = "none"

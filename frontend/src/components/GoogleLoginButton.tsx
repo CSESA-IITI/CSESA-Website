@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useAuth } from '../contexts/AuthContext';
 
 interface GoogleLoginButtonProps {
   className?: string;
@@ -13,14 +12,6 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   variant = 'default',
   size = 'md'
 }) => {
-  const { login, isLoading } = useAuth();
-
-  const handleLogin = () => {
-    if (!isLoading) {
-      login();
-    }
-  };
-
   // Size classes
   const sizeClasses = {
     sm: 'px-4 py-2 text-sm',
@@ -36,14 +27,13 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   };
 
   return (
-    <motion.button
-      onClick={handleLogin}
-      disabled={isLoading}
+    <motion.a
+      href="http://localhost:8000/accounts/google/login/?process=login"
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       className={`
         inline-flex items-center justify-center gap-3 rounded-lg font-medium
-        transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+        transition-all duration-200
         ${sizeClasses[size]} ${variantClasses[variant]} ${className}
       `}
     >
@@ -71,16 +61,8 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
           d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
         />
       </svg>
-
-      {isLoading ? (
-        <>
-          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-          Signing in...
-        </>
-      ) : (
-        'Continue with Google'
-      )}
-    </motion.button>
+      Continue with Google
+    </motion.a>
   );
 };
 
