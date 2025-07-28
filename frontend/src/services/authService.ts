@@ -23,7 +23,7 @@ class AuthService {
       const state = window.crypto.randomUUID();
       localStorage.setItem('oauth_state', state);
 
-      const redirectUri = `${window.location.origin}/auth/callback`;
+      const redirectUri = `${window.location.origin}/CSESA-Website/auth/callback`;
       const stateData = {
         state,
         from: redirectPath,
@@ -48,33 +48,26 @@ class AuthService {
   }
 
   // Handle the OAuth callback with the authorization code
-  async handleGoogleCallback(code: string, stateStr: string): Promise<AuthResponse> {
+  async handleGoogleCallback(code: string, state: string): Promise<AuthResponse> {
     try {
-      const state = JSON.parse(stateStr);
-      // Get the stored state from localStorage
-      const storedState = localStorage.getItem('oauth_state');
-
-      // Verify the state parameter to prevent CSRF attacks
-      if (!storedState || state.state !== storedState) {
-        throw new Error('Invalid state parameter');
-      }
-
-      // Clean up the stored state
-      localStorage.removeItem('oauth_state');
-
       // Prepare the request data
       const requestData = {
         code,
-        state: stateStr
+        state,
       };
 
       // Send the authorization code to the backend to exchange for tokens
-      const response = await apiClient.post('/api/auth/google/callback/', requestData);
+      const response = await apiClient.post(
+        '/api/auth/google/callback/',
+        requestData
+      );
 
       const { access_token, refresh_token, user, redirect_uri } = response.data;
 
       if (!access_token || !user) {
-        throw new Error('Invalid response from server: missing access token or user data');
+        throw new Error(
+          'Invalid response from server: missing access token or user data'
+        );
       }
 
       // Store the tokens and user data

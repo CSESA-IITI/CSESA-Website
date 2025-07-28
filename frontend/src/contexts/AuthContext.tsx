@@ -61,11 +61,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error('No user data in auth response');
       }
       
-      // Redirect to the specified URL after successful login
-      if (response.redirect_uri) {
-        window.location.href = response.redirect_uri;
-      }
-      
       return response;
     } catch (error) {
       console.error('Error handling Google callback:', error);

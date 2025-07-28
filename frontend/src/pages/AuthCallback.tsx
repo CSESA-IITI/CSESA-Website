@@ -61,7 +61,7 @@ const AuthCallback: React.FC = () => {
       }
 
       // Verify state to prevent CSRF attacks
-      if (!storedState || storedState !== savedState) {
+      if (!state || !savedState || stateData.state !== savedState) {
         setStatus('error');
         setError('Invalid state parameter');
         setTimeout(() => navigate('/login'), 3000);
@@ -69,15 +69,15 @@ const AuthCallback: React.FC = () => {
       }
 
       try {
-        const response = await handleGoogleCallback(code, storedState);
+        const response = await handleGoogleCallback(code, state);
         setStatus('success');
-        
+
         // Use the redirect_uri from the response or fall back to the one in state
-        const redirectTo = response.redirect_uri || stateData?.redirect_uri || '/';
-        
+        const redirectTo = response.redirect_uri || stateData?.from || '/';
+
         // Small delay to show success message before redirecting
         setTimeout(() => {
-          window.location.href = redirectTo;
+          navigate(redirectTo);
         }, 1000);
       } catch (err) {
         console.error('Authentication error:', err);
