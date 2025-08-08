@@ -1,16 +1,25 @@
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import RollingText from "./RollingText";
 import { useAuth } from "../contexts/AuthContext";
-import GoogleLoginButton from "./GoogleLoginButton";
-import UserProfile from "./UserProfile";
+import ProfileDropdown from "./ProfileDropdown";
 
 const FuturisticNavbar: React.FC = () => {
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("Home");
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
+  
+  // Update active item based on current route
+  useEffect(() => {
+    const path = location.pathname;
+    const activeNav = navItems.find(item => item.href === path);
+    if (activeNav) {
+      setActiveItem(activeNav.name);
+    }
+  }, [location]);
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -19,6 +28,8 @@ const FuturisticNavbar: React.FC = () => {
     { name: "Projects", href: "/projects" },
     { name: "Contact", href: "/contact" },
   ];
+  
+
 
   return (
     <motion.nav
@@ -90,13 +101,14 @@ const FuturisticNavbar: React.FC = () => {
               {/* Authentication Section */}
               <div className="ml-4 flex items-center">
                 {isAuthenticated ? (
-                  <UserProfile className="" />
+                  <ProfileDropdown />
                 ) : (
-                  <GoogleLoginButton 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-xs"
-                  />
+                  <Link 
+                    to="/login" 
+                    className="px-4 py-2 text-xs font-medium rounded-lg border border-blue-400/30 hover:bg-blue-500/10 text-blue-400 hover:text-white transition-colors duration-200"
+                  >
+                    Login
+                  </Link>
                 )}
               </div>
             </div>
@@ -162,13 +174,16 @@ const FuturisticNavbar: React.FC = () => {
                   {/* Mobile Authentication Section */}
                   <div className="pt-4 border-t border-white/20">
                     {isAuthenticated ? (
-                      <UserProfile className="w-full" />
+                      <div className="flex justify-center">
+                        <ProfileDropdown />
+                      </div>
                     ) : (
-                      <GoogleLoginButton 
-                        variant="outline" 
-                        size="md" 
-                        className="w-full justify-center"
-                      />
+                      <Link 
+                        to="/login" 
+                        className="w-full flex justify-center px-4 py-2 text-sm font-medium rounded-lg border border-blue-400/30 hover:bg-blue-500/10 text-blue-400 hover:text-white transition-colors duration-200"
+                      >
+                        Login
+                      </Link>
                     )}
                   </div>
                 </div>

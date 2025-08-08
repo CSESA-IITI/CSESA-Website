@@ -1,77 +1,48 @@
+// src/contexts/AuthContext.tsx
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import authService, { User, AuthResponse } from '../services/authService';
+import authService, { User } from '../services/authService';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (redirectPath?: string) => void;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  hasRole: (role: string) => boolean;
-  handleGoogleCallback: (code: string, state: string) => Promise<AuthResponse>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already authenticated on app load
-    const checkAuth = async () => {
+    // On app load, check if the user is already authenticated
+    const checkLoggedInStatus = () => {
       try {
         const currentUser = authService.getCurrentUser();
-        if (currentUser && authService.isAuthenticated()) {
+        if (currentUser) {
           setUser(currentUser);
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
-        authService.logout();
+        console.error("Failed to parse user from storage:", error);
+        authService.logout(); // Clear corrupted data
       } finally {
         setIsLoading(false);
       }
     };
-
-    checkAuth();
+    checkLoggedInStatus();
   }, []);
 
-  const login = (redirectPath: string = '/') => {
-    authService.initiateGoogleLogin(redirectPath);
-  };
-
-  const handleGoogleCallback = async (code: string, state: string) => {
-    console.log('=== AuthContext: Handling Google callback ===');
-    console.log('Code:', code);
-    console.log('State:', state);
-    
+  const login = async (email: string, password: string) => {
     try {
-      console.log('Calling authService.handleGoogleCallback...');
-      const response: AuthResponse = await authService.handleGoogleCallback(code, state);
-      console.log('Auth response received:', response);
-      
-      if (response && response.user) {
-        console.log('Setting user in context:', response.user);
-        setUser(response.user);
-      } else {
-        console.error('No user data in auth response');
-      }
-      
-      // Redirect to the specified URL after successful login
-      if (response.redirect_uri) {
-        window.location.href = response.redirect_uri;
-      }
-      
-      return response;
+      const loggedInUser = await authService.login(email, password);
+      setUser(loggedInUser);
     } catch (error) {
-      console.error('Error handling Google callback:', error);
+      console.error('Login failed:', error);
+      // Re-throw error so the UI component can handle it (e.g., show a message)
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -80,23 +51,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
-  const hasRole = (role: string): boolean => {
-    return authService.hasRole(role);
-  };
-
   const value: AuthContextType = {
     user,
-    isAuthenticated: authService.isAuthenticated(),
+    isAuthenticated: !!user, // isAuthenticated is true if user object exists
     isLoading,
     login,
     logout,
-    hasRole,
-    handleGoogleCallback,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!isLoading && children}
     </AuthContext.Provider>
   );
 };

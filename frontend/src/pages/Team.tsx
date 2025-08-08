@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { apiService } from "../services/apiService";
 
 // 1. Define an interface for a TeamMember object
 interface TeamMember {
@@ -7,79 +8,76 @@ interface TeamMember {
   name: string;
   role: string;
   department: string;
-  year: string; // Could be a union type if known: "Freshman" | "Sophomore" | "Junior" | "Senior" | "Alumni"
-  bio: string;
+  year: string;
+  bio: string; // We'll add a default for this
   skills: string[];
   image: string;
 }
 
 const Team = () => {
   // 2. Type selectedMember state: TeamMember | null
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 3. Explicitly type the teamMembers array as an array of TeamMember
-  const teamMembers: TeamMember[] = [
-    {
-      id: 1,
-      name: "Alex Chen",
-      role: "President",
-      department: "Computer Science",
-      year: "Senior",
-      bio: "Leading CSESA with passion for innovation and community building. Specializes in full-stack development and AI/ML.",
-      skills: ["Leadership", "React", "Python", "Machine Learning"],
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face"
-    },
-    {
-      id: 2,
-      name: "Sarah Johnson",
-      role: "Vice President",
-      department: "Software Engineering",
-      year: "Junior",
-      bio: "Driving technical initiatives and fostering collaboration between students and industry professionals.",
-      skills: ["Project Management", "Java", "DevOps", "Cloud Computing"],
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b789?w=300&h=300&fit:crop&crop=face"
-    },
-    {
-      id: 3,
-      name: "Marcus Rodriguez",
-      role: "Technical Lead",
-      department: "Computer Engineering",
-      year: "Senior",
-      bio: "Organizing hackathons and technical workshops. Passionate about open source and cybersecurity.",
-      skills: ["Cybersecurity", "C++", "Linux", "Blockchain"],
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit:crop&crop=face"
-    },
-    {
-      id: 4,
-      name: "Emily Zhang",
-      role: "Events Coordinator",
-      department: "Information Systems",
-      year: "Sophomore",
-      bio: "Creating engaging events that bring together the CS community. Expert in UX design and mobile development.",
-      skills: ["Event Planning", "UI/UX", "Flutter", "Design Thinking"],
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit:crop&crop=face"
-    },
-    {
-      id: 5,
-      name: "David Kim",
-      role: "Treasurer",
-      department: "Data Science",
-      year: "Junior",
-      bio: "Managing finances and partnerships. Specializes in data analytics and financial technology.",
-      skills: ["Finance", "Data Analysis", "R", "SQL"],
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit:crop&crop=face"
-    },
-    {
-      id: 6,
-      name: "Lisa Wang",
-      role: "Secretary",
-      department: "Computer Science",
-      year: "Sophomore",
-      bio: "Keeping everything organized and maintaining communication channels. Passionate about web development.",
-      skills: ["Organization", "JavaScript", "Node.js", "Communication"],
-      image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=300&h=300&fit:crop&crop=face"
-    }
-  ];
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        setIsLoading(true);
+        const response = await apiService.getUsers();
+
+        // The backend uses pagination, so the user data is in response.data.results
+        const rawUsers = response.data.results || [];
+
+        // Transform the backend data to match the frontend's TeamMember interface
+        const transformedMembers: TeamMember[] = rawUsers.map((user: any) => {
+          const backendUrl = "http://127.0.0.1:8000";
+          return {
+            id: user.id,
+            name: user.name,
+            role: user.role_name || "Member", // from role_name
+            department: user.domain_name || "General", // from domain_name
+            year: user.batch || "N/A", // from batch
+            skills: user.skills || [],
+            image: user.profile_pic
+              ? `${backendUrl}${user.profile_pic}`
+              : `https://ui-avatars.com/api/?name=${user.name.replace(
+                  " ",
+                  "+"
+                )}&background=random`,
+            // Your User model doesn't have a 'bio' field, so we add a placeholder.
+            bio: "This member has not yet added a bio. They are a valued part of our team, contributing with their unique skills and perspective.",
+          };
+        });
+
+        setTeamMembers(transformedMembers);
+      } catch (err) {
+        console.error("Failed to fetch team members:", err);
+        setError("Could not load the team list.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTeamMembers();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        Loading Team...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <section className="relative min-h-screen bg-black text-white px-4 py-20 overflow-hidden">
@@ -129,7 +127,6 @@ const Team = () => {
               {/* {` { TEAM }`} */}
             </span>
           </motion.div>
-
         </motion.div>
 
         {/* Team Grid */}
@@ -160,7 +157,11 @@ const Team = () => {
                   <motion.div
                     className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-xs font-bold"
                     animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 10,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   >
                     {member.year.charAt(0)}
                   </motion.div>
@@ -171,8 +172,12 @@ const Team = () => {
                   <h3 className="text-lg font-bold mb-2 text-white group-hover:text-blue-400 transition-colors vamos">
                     {member.name}
                   </h3>
-                  <p className="text-blue-400 font-semibold mb-1 alegreya-sans-sc-regular">{member.role}</p>
-                  <p className="text-gray-400 text-sm mb-4 alegreya-sans-sc-regular">{member.department}</p>
+                  <p className="text-blue-400 font-semibold mb-1 alegreya-sans-sc-regular">
+                    {member.role}
+                  </p>
+                  <p className="text-gray-400 text-sm mb-4 alegreya-sans-sc-regular">
+                    {member.department}
+                  </p>
 
                   {/* Skills Preview */}
                   <div className="flex flex-wrap justify-center gap-2 mb-4">
@@ -203,8 +208,6 @@ const Team = () => {
             </motion.div>
           ))}
         </div>
-
-        
       </div>
 
       {/* Modal for Member Details */}
@@ -242,14 +245,24 @@ const Team = () => {
                 </div>
 
                 <div className="flex-1">
-                  <h2 className="text-3xl font-bold text-white mb-2">{selectedMember.name}</h2>
-                  <p className="text-blue-400 text-xl font-semibold mb-1">{selectedMember.role}</p>
-                  <p className="text-gray-400 mb-4">{selectedMember.department} • {selectedMember.year}</p>
+                  <h2 className="text-3xl font-bold text-white mb-2">
+                    {selectedMember.name}
+                  </h2>
+                  <p className="text-blue-400 text-xl font-semibold mb-1">
+                    {selectedMember.role}
+                  </p>
+                  <p className="text-gray-400 mb-4">
+                    {selectedMember.department} • {selectedMember.year}
+                  </p>
 
-                  <p className="text-gray-300 mb-6 leading-relaxed">{selectedMember.bio}</p>
+                  <p className="text-gray-300 mb-6 leading-relaxed">
+                    {selectedMember.bio}
+                  </p>
 
                   <div>
-                    <h3 className="text-white font-semibold mb-3">Skills & Expertise</h3>
+                    <h3 className="text-white font-semibold mb-3">
+                      Skills & Expertise
+                    </h3>
                     <div className="flex flex-wrap gap-3">
                       {selectedMember.skills.map((skill, idx) => (
                         <span

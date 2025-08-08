@@ -1,131 +1,94 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { apiService } from "../services/apiService";
 
 interface Project {
   id: number;
-  title: string;
-  category: "AI/ML" | "Web Development" | "VR/AR" | "Mobile Development" | "Blockchain" | "IoT"; 
-  status: "completed" | "in-progress" | "planning";
-  description: string;
-  longDescription: string;
-  technologies: string[];
-  github: string | null; 
-  demo: string | null; 
+  title: string; // 'name' from backend
+  category: string; // Derived from 'domains_data'
+  status: "completed" | "in-progress"; // 'status' from backend
+  description: string; // 'description_short' from backend
+  longDescription: string; // 'description_long' from backend
+  technologies: string[]; // 'tech_stack' from backend
+  github: string | null;
+  demo: string | null;
   image: string;
-  team: string[];
-  achievements: string[];
-  timeline: string;
+  team: string[]; // Derived from 'team_members_data'
 }
 
 const Projects = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [filterCategory, setFilterCategory] = useState<Project['category'] | "all">("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [categories, setCategories] = useState<string[]>(["all"]);
 
 
-  const projects: Project[] = [
-    {
-      id: 1,
-      title: "AI Study Buddy",
-      category: "AI/ML",
-      status: "completed",
-      description: "An intelligent tutoring system that helps students learn programming concepts through personalized AI assistance.",
-      longDescription: "AI Study Buddy is a comprehensive learning platform that uses machine learning algorithms to adapt to each student's learning style. The system analyzes coding patterns, identifies knowledge gaps, and provides personalized recommendations for improvement. Built with React, Python Flask, and TensorFlow, it has helped over 200 students improve their programming skills.",
-      technologies: ["React", "Python", "TensorFlow", "Flask", "PostgreSQL"],
-      github: "https://github.com/csesa/ai-study-buddy",
-      demo: "https://ai-study-buddy.csesa.org",
-      image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=500&h=300&fit=crop",
-      team: ["Alex Chen", "Sarah Johnson", "Emily Zhang"],
-      achievements: ["Winner of University Innovation Award", "1000+ active users", "Featured in Tech News"],
-      timeline: "Sep 2024 - Dec 2024"
-    },
-    {
-      id: 2,
-      title: "Campus Connect",
-      category: "Web Development",
-      status: "in-progress",
-      description: "A social networking platform designed specifically for university students to connect, collaborate, and share resources.",
-      longDescription: "Campus Connect aims to bridge the gap between students across different departments and year levels. The platform features study groups, project collaboration tools, event management, and a resource sharing system. Currently in beta testing with 500+ student users.",
-      technologies: ["Next.js", "Node.js", "MongoDB", "Socket.io", "AWS"],
-      github: "https://github.com/csesa/campus-connect",
-      demo: "https://beta.campus-connect.edu",
-      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&h=300&fit=crop",
-      team: ["Marcus Rodriguez", "Lisa Wang", "David Kim"],
-      achievements: ["500+ beta users", "Positive feedback from students", "Partnership with Student Affairs"],
-      timeline: "Jan 2025 - Ongoing"
-    },
-    {
-      id: 3,
-      title: "CodeLab VR",
-      category: "VR/AR",
-      status: "completed",
-      description: "Virtual reality environment for learning programming concepts through immersive 3D visualizations.",
-      longDescription: "CodeLab VR revolutionizes programming education by creating immersive virtual environments where students can visualize data structures, algorithms, and code execution in 3D space. The project won first place in the National VR Education Hackathon.",
-      technologies: ["Unity", "C#", "Oculus SDK", "Blender", "Firebase"],
-      github: "https://github.com/csesa/codelab-vr",
-      demo: "https://codelab-vr.csesa.org",
-      image: "https://images.unsplash.com/photo-1592478411213-6153e4ebc696?w=500&h=300&fit=crop",
-      team: ["Emily Zhang", "Alex Chen", "Marcus Rodriguez"],
-      achievements: ["1st Place National VR Hackathon", "Featured in VR Education Journal", "Patent Application Filed"],
-      timeline: "Mar 2024 - Aug 2024"
-    },
-    {
-      id: 4,
-      title: "EcoTrack",
-      category: "Mobile Development",
-      status: "completed",
-      description: "Mobile app for tracking and reducing carbon footprint with gamification elements and community challenges.",
-      longDescription: "EcoTrack motivates users to adopt sustainable practices through gamification and social features. Users can track their daily activities, earn points for eco-friendly choices, and participate in community challenges. The app has been downloaded over 5000 times.",
-      technologies: ["React Native", "Firebase", "Node.js", "Google Maps API"],
-      github: "https://github.com/csesa/ecotrack",
-      demo: "https://apps.apple.com/ecotrack",
-      image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500&h=300&fit=crop",
-      team: ["Sarah Johnson", "David Kim", "Lisa Wang"],
-      achievements: ["5000+ downloads", "4.8 star rating", "Featured in App Store"],
-      timeline: "Jun 2024 - Oct 2024"
-    },
-    {
-      id: 5,
-      title: "Blockchain Voting System",
-      category: "Blockchain",
-      status: "in-progress",
-      description: "Secure and transparent voting system using blockchain technology for student government elections.",
-      longDescription: "A decentralized voting platform that ensures election integrity and transparency. The system uses smart contracts to automate vote counting and provides real-time results while maintaining voter anonymity. Currently being tested for student government elections.",
-      technologies: ["Solidity", "Web3.js", "React", "Ethereum", "IPFS"],
-      github: "https://github.com/csesa/blockchain-voting",
-      demo: "https://vote.csesa.org",
-      image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=500&h=300&fit=crop",
-      team: ["Marcus Rodriguez", "Alex Chen", "David Kim"],
-      achievements: ["Successful pilot test", "Security audit passed", "Collaboration with Student Government"],
-      timeline: "Nov 2024 - Ongoing"
-    },
-    {
-      id: 6,
-      title: "Smart Library System",
-      category: "IoT",
-      status: "planning",
-      description: "IoT-based library management system with automated book tracking and smart study space allocation.",
-      longDescription: "An intelligent library system that uses IoT sensors to track book locations, monitor study space occupancy, and provide real-time availability updates. The system aims to optimize library resources and improve student experience.",
-      technologies: ["Arduino", "Raspberry Pi", "Python", "React", "LoRaWAN"],
-      github: "https://github.com/csesa/smart-library",
-      demo: null,
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=300&fit=crop",
-      team: ["Emily Zhang", "Sarah Johnson", "Lisa Wang"],
-      achievements: ["Approved by Library Committee", "Funding secured", "Partnership with IoT Lab"],
-      timeline: "Mar 2025 - Planned"
-    }
-  ];
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setIsLoading(true);
+        const response = await apiService.getProjects();
+        console.log(response.data)
 
-  const categories: Array<Project['category'] | "all"> = ["all", "AI/ML", "Web Development", "VR/AR", "Mobile Development", "Blockchain", "IoT"];
+        // **THE FIX**: Access the .results property of the paginated response
+        const projectData = response.data.results || [];
+
+        // Transform API data to match the frontend 'Project' interface
+        const transformedData: Project[] = projectData.map((p: any) => ({
+          id: p.id,
+          title: p.name,
+          // Use the first domain name as the category, with a fallback
+          category: p.domains_data[0]?.name || "General",
+          status: p.status,
+          description: p.description_short, // Use description_short
+          longDescription: p.description_long,
+          technologies: p.tech_stack, // Use tech_stack
+          github: p.github_link,
+          demo: p.deployment_link,
+          image: p.image || "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&h=300&fit=crop",
+          // Map team members to just their names
+          team: p.team_members_data.map((member: any) => member.user.first_name || "User"),
+          // The fields below do not exist in your serializer, so they are removed.
+          // achievements: [],
+          // timeline: "",
+        }));
+        
+        // Dynamically create category list from fetched projects
+        const uniqueCategories = ["all", ...new Set(transformedData.map(p => p.category))];
+        setCategories(uniqueCategories);
+        
+        setProjects(transformedData);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch projects:", err);
+        setError("Could not load projects. The server might be down or an error occurred.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
 
   const statusColors: Record<Project['status'], string> = {
     completed: "bg-green-500",
     "in-progress": "bg-yellow-500",
-    planning: "bg-blue-500"
   };
 
   const filteredProjects = filterCategory === "all"
     ? projects
     : projects.filter(project => project.category === filterCategory);
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading Projects...</div>;
+  }
+
+  if (error) {
+    return <div className="min-h-screen bg-black text-white flex items-center justify-center text-red-500">{error}</div>;
+  }
 
   return (
     <section className="relative min-h-screen bg-black text-white px-4 py-20 overflow-hidden">
@@ -218,6 +181,7 @@ const Projects = () => {
                 whileHover={{ y: -10, rotateY: 5 }}
                 className="group cursor-pointer"
                 onClick={() => setSelectedProject(project)}
+
               >
                 <div className="bg-gray-900/50 backdrop-blur-md rounded-2xl overflow-hidden border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 h-full">
                   {/* Project Image */}
@@ -350,11 +314,6 @@ const Projects = () => {
                   <p className="text-gray-300 leading-relaxed">{selectedProject.longDescription}</p>
                 </div>
 
-                {/* Timeline */}
-                <div className="mb-8">
-                  <h3 className="text-xl font-bold text-white mb-4">Timeline</h3>
-                  <p className="text-gray-300">{selectedProject.timeline}</p>
-                </div>
 
                 {/* Technologies */}
                 <div className="mb-8">
@@ -386,18 +345,6 @@ const Projects = () => {
                   </div>
                 </div>
 
-                {/* Achievements */}
-                <div className="mb-8">
-                  <h3 className="text-xl font-bold text-white mb-4">Achievements</h3>
-                  <ul className="space-y-2">
-                    {selectedProject.achievements.map((achievement, idx) => (
-                      <li key={idx} className="flex items-center gap-3 text-gray-300">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        {achievement}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
 
                 {/* Action Buttons */}
                 <div className="flex gap-4">

@@ -1,21 +1,34 @@
 # projects/views.py
-from rest_framework import viewsets
-from .models import Project, Domain
-from .serializers import ProjectSerializer, DomainSerializer
-from users.permissions import IsPresident, IsDomainHead, IsCoordinator
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework import generics, permissions
+from rest_framework.exceptions import PermissionDenied
+from .models import Project
+from .serializers import ProjectSerializer
 
-class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.all()
+class CanManageProjectPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return request.user.is_authenticated
+        return request.user.is_authenticated and request.user.can_manage_content()
+
+class ProjectListCreateView(generics.ListCreateAPIView):
+    queryset = Project.objects.select_related('created_by').prefetch_related('domains', 'team_members').all()
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [CanManageProjectPermission]
 
-    def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            self.permission_classes = [IsPresident | IsDomainHead | IsCoordinator]
-        return super().get_permissions()
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
-class DomainViewSet(viewsets.ModelViewSet):
-    queryset = Domain.objects.all()
-    serializer_class = DomainSerializer
-    permission_classes = [IsPresident] # Only President can manage domains
+class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Project.objects.select_related('created_by').prefetch_related('domains', 'team_members').all()
+    serializer_class = ProjectSerializer
+    permission_classes = [CanManageProjectPermission]
+
+    def perform_update(self, serializer):
+        if not self.request.user.can_manage_content():
+            raise PermissionDenied("You don't have permission to update projects")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if not self.request.user.can_manage_content():
+            raise PermissionDenied("You don't have permission to delete projects")
+        instance.delete()

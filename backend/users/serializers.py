@@ -1,37 +1,79 @@
+# users/serializers.py
 from rest_framework import serializers
-from .models import CustomUser
-import re
+from django.contrib.auth import authenticate
+from .models import User, Domain, Role
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+
+class DomainSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Domain
+        fields = ['id', 'name', 'description']
+
+class RoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ['id', 'name', 'can_manage_events', 'can_manage_projects']
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ['id', 'email', 'first_name', 'last_name', 'role', 'branch', 'admission_year', 'skills', 'github_link', 'linkedin_link', 'instagram_link']
-        read_only_fields = ['branch', 'admission_year']
-
-class UserRegistrationSerializer(serializers.ModelSerializer):
+    domain_name = serializers.CharField(source='domain.name', read_only=True)
+    role_name = serializers.CharField(source='role.name', read_only=True)
     password = serializers.CharField(write_only=True)
 
     class Meta:
-        model = CustomUser
-        fields = ['email', 'password', 'first_name', 'last_name']
+        model = User
+        fields = [
+            'id', 'username', 'name', 'email', 'password', 'role', 'role_name',
+            'domain', 'domain_name', 'batch', 'github_link', 'instagram_link',
+            'linkedin_link', 'profile_pic', 'skills', 'is_active', 'created_at'
+        ]
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'created_at': {'read_only': True}
+        }
 
     def create(self, validated_data):
-        email = validated_data['email']
-        
-        # Email parsing logic
-        match = re.match(r"([a-z]+)(\d{2})\d{5}@iiti\.ac\.in", email)
-        if not match:
-            raise serializers.ValidationError("Invalid institutional email format.")
-        
-        branch = match.group(1).upper()
-        admission_year = "20" + match.group(2)
-        
-        user = CustomUser.objects.create_user(
-            email=email,
-            password=validated_data['password'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', ''),
-            branch=branch,
-            admission_year=admission_year
-        )
+        password = validated_data.pop('password')
+        user = User.objects.create_user(**validated_data)
+        user.set_password(password)
+        user.save()
         return user
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+
+        if email and password:
+            user = authenticate(username=email, password=password)
+            if not user:
+                raise serializers.ValidationError('Invalid credentials')
+            if not user.is_active:
+                raise serializers.ValidationError('User account is disabled')
+            data['user'] = user
+        else:
+            raise serializers.ValidationError('Must include email and password')
+        return data
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # You can add custom claims to the token itself if needed
+        # token['first_name'] = user.first_name
+        
+        return token
+
+    def validate(self, attrs):
+        # This method is called upon login
+        data = super().validate(attrs)
+
+        # Add user data to the response
+        serializer = UserSerializer(self.user)
+        data['user'] = serializer.data
+        
+        return data

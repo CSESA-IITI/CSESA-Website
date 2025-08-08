@@ -1,129 +1,52 @@
-from rest_framework import generics, viewsets, permissions, status
-from rest_framework.views import APIView
+# users/views.py
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser
-from .serializers import UserSerializer
-from .permissions import IsPresident, IsDomainHead
-import re
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from django.contrib.auth import login, logout
+from .models import User, Domain, Role
+from .serializers import UserSerializer, LoginSerializer, DomainSerializer, RoleSerializer, MyTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from google.oauth2 import id_token
-from google.auth.transport import requests
-from django.conf import settings
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
-
-class GoogleLoginView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        try:
-            # The frontend sends the Google ID token
-            token = request.data.get('token')
-            
-            # Verify the token with Google
-            idinfo = id_token.verify_oauth2_token(
-                token, requests.Request(), settings.GOOGLE_CLIENT_ID
-            )
-
-            email = idinfo['email']
-            
-            # Check for institutional email
-            if not email.endswith('@iiti.ac.in'):
-                return Response({'error': 'Only IITI institutional accounts are allowed.'}, status=status.HTTP_403_FORBIDDEN)
-
-            # --- Onboarding and Login Logic ---
-            try:
-                user = CustomUser.objects.get(email=email)
-                # User already exists, log them in
-                
-            except CustomUser.DoesNotExist:
-                # First user ever? Make them President.
-                if CustomUser.objects.count() == 0:
-                    # Parse email for branch and year
-                    match = re.match(r"([a-z]+)(\d{2})\d{5}@iiti\.ac\.in", email)
-                    branch = match.group(1).upper() if match else ''
-                    admission_year = "20" + match.group(2) if match else ''
-
-                    user = CustomUser.objects.create_user(
-                        email=email,
-                        first_name=idinfo.get('given_name', ''),
-                        last_name=idinfo.get('family_name', ''),
-                        role=CustomUser.Role.PRESIDENT,
-                        branch=branch,
-                        admission_year=admission_year,
-                        is_onboarded=True, # President is onboarded by default
-                        is_staff=True, # President can access admin panel
-                    )
-                else:
-                    # If user doesn't exist and is not the first, they can't log in
-                    return Response({'error': 'Account not found. Please ask a President or Domain Head to add you.'}, status=status.HTTP_404_NOT_FOUND)
-            
-            # Generate JWT tokens for the user
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-                'user': UserSerializer(user).data
-            })
-
-        except ValueError:
-            # Invalid token
-            return Response({'error': 'Invalid Google token.'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class InviteUserView(generics.CreateAPIView):
+class MyTokenObtainPairView(TokenObtainPairView):
     """
-    An endpoint for Presidents and Domain Heads to add new users to the system.
+    Takes a set of user credentials and returns an access and refresh JSON web
+    token pair to prove the authentication of those credentials, and includes user data.
     """
-    permission_classes = [IsPresident | IsDomainHead]
-    serializer_class = UserSerializer # We can reuse this for input validation
+    serializer_class = MyTokenObtainPairSerializer
 
-    def create(self, request, *args, **kwargs):
-        email = request.data.get('email')
-        role = request.data.get('role')
 
-        if not email or not role:
-            return Response({'error': 'Email and role are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check for institutional email
-        if not email.endswith('@iiti.ac.in'):
-            return Response({'error': 'Only IITI institutional accounts are allowed.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Prevent Domain Heads from creating Presidents or other Domain Heads
-        if request.user.role == CustomUser.Role.DOMAIN_HEAD and role in [CustomUser.Role.PRESIDENT, CustomUser.Role.DOMAIN_HEAD]:
-            return Response({'error': 'You do not have permission to create users with this role.'}, status=status.HTTP_403_FORBIDDEN)
-        
-        if CustomUser.objects.filter(email=email).exists():
-            return Response({'error': 'A user with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Parse email
-        match = re.match(r"([a-z]+)(\d{2})\d{5}@iiti\.ac\.in", email)
-        branch = match.group(1).upper() if match else ''
-        admission_year = "20" + match.group(2) if match else ''
-        
-        # Create a new, inactive user who can now log in via Google
-        new_user = CustomUser.objects.create_user(
-            email=email,
-            role=role,
-            branch=branch,
-            admission_year=admission_year
-        )
-        
-        return Response(UserSerializer(new_user).data, status=status.HTTP_201_CREATED)
-
-# This view is still useful for Associates to update their profile
-class UserProfileView(generics.RetrieveUpdateAPIView):
-    queryset = CustomUser.objects.all()
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.select_related('role', 'domain').all()
+    serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = UserSerializer
 
-    def get_object(self):
-        return self.request.user
-
-# This view is still useful for the President to manage roles
-class UserManagementViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all().order_by('first_name')
-    permission_classes = [IsPresident]
+class UserDetailView(generics.RetrieveUpdateAPIView):
+    queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class DomainListView(generics.ListAPIView):
+    queryset = Domain.objects.all()
+    serializer_class = DomainSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class RoleListView(generics.ListAPIView):
+    queryset = Role.objects.all()
+    serializer_class = RoleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def logout_view(request):
+    try:
+        logout(request)
+        return Response({'message': 'Successfully logged out'})
+    except:
+        return Response({'error': 'Error logging out'}, status=status.HTTP_400_BAD_REQUEST)

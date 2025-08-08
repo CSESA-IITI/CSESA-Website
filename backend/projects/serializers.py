@@ -1,43 +1,59 @@
+# projects/serializers.py
 from rest_framework import serializers
-from .models import Domain, Project
-from users.models import CustomUser
+from .models import Project, ProjectTeamMember
+from users.serializers import UserSerializer, DomainSerializer
 
-# A simple serializer for Domain names
-class DomainSerializer(serializers.ModelSerializer):
+class ProjectTeamMemberSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    user_id = serializers.IntegerField(write_only=True)
+
     class Meta:
-        model = Domain
-        fields = ['id', 'name']
+        model = ProjectTeamMember
+        fields = ['user', 'user_id', 'role_in_project', 'joined_at']
 
-# A lightweight serializer to represent team members within a project response
-class ProjectMemberSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ['id', 'email', 'first_name', 'last_name', 'role']
-
-# Main serializer for the Project model
 class ProjectSerializer(serializers.ModelSerializer):
-    # These read-only fields provide detailed info in GET responses
-    domains_details = DomainSerializer(many=True, read_only=True, source='domains')
-    team_members_details = ProjectMemberSerializer(many=True, read_only=True, source='team_members')
+    domains_data = DomainSerializer(source='domains', many=True, read_only=True)
+    domain_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)
+    team_members_data = ProjectTeamMemberSerializer(source='projectteammember_set', many=True, read_only=True)
+    team_member_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    created_by_data = UserSerializer(source='created_by', read_only=True)
 
     class Meta:
         model = Project
         fields = [
-            'id',
-            'name',
-            'description',
-            'tech_stack',
-            'github_link',
-            'deployment_link',
-            'created_at',
-            'updated_at',
-            'domains', # This field is for writing (accepting a list of domain IDs)
-            'domains_details', # This field is for reading (showing full domain details)
-            'team_members', # This field is for writing (accepting a list of user IDs)
-            'team_members_details', # This field is for reading (showing user details)
+            'id', 'name', 'description_short', 'description_long', 'tech_stack',
+            'github_link', 'deployment_link', 'status', 'image', 'created_by',
+            'created_by_data', 'domains_data', 'domain_ids', 'team_members_data',
+            'team_member_ids', 'created_at', 'updated_at'
         ]
-        # These fields will accept a list of Primary Keys (IDs) during POST/PUT requests
-        extra_kwargs = {
-            'domains': {'write_only': True},
-            'team_members': {'write_only': True}
-        }
+        read_only_fields = ['created_by', 'created_at', 'updated_at']
+
+    def create(self, validated_data):
+        domain_ids = validated_data.pop('domain_ids')
+        team_member_ids = validated_data.pop('team_member_ids', [])
+        
+        project = Project.objects.create(**validated_data)
+        project.domains.set(domain_ids)
+        
+        for user_id in team_member_ids:
+            ProjectTeamMember.objects.create(project=project, user_id=user_id)
+        
+        return project
+
+    def update(self, instance, validated_data):
+        domain_ids = validated_data.pop('domain_ids', None)
+        team_member_ids = validated_data.pop('team_member_ids', None)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        if domain_ids is not None:
+            instance.domains.set(domain_ids)
+        
+        if team_member_ids is not None:
+            instance.projectteammember_set.all().delete()
+            for user_id in team_member_ids:
+                ProjectTeamMember.objects.create(project=instance, user_id=user_id)
+        
+        return instance

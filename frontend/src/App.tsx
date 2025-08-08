@@ -1,11 +1,17 @@
-import { lazy, Suspense, useState, useEffect } from "react";
+// src/App.tsx
 
-import Footer from "./components/Footer";
+import { lazy, Suspense } from "react";
+import { HashRouter as Router, Route, Routes } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+
+import { AuthProvider } from "./contexts/AuthContext";
 import Header from "./components/Navbar";
+import Footer from "./components/Footer";
 import LoadingPage from "./components/Loading";
 import CursorGlow from "./components/CursorGlow";
-import { AuthProvider } from "./contexts/AuthContext";
+import "./App.css";
 
+// Lazy-loaded components
 const LazyHome = lazy(() => import("./pages/Home"));
 const LazyTeam = lazy(() => import("./pages/Team"));
 const LazyEvents = lazy(() => import("./pages/PastEvents"));
@@ -14,36 +20,19 @@ const LazyContact = lazy(() => import("./pages/ContactUs"));
 const LazyLogin = lazy(() => import("./pages/Login"));
 const LazyNotFound = lazy(() => import("./pages/NotFound"));
 const LazyDummy = lazy(() => import("./pages/Dummy"));
-const LazyAuthCallback = lazy(() => import("./pages/AuthCallback"));
-
-import { HashRouter as Router, Route, Routes } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
-
-import "./App.css";
+const LazyProfile = lazy(() => import("./pages/Profile"));
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500); // 
-
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <AuthProvider>
       <Router>
         <div className="relative min-h-screen w-screen overflow-hidden bg-white">
           <div className="relative z-10 flex flex-col min-h-screen bg-white text-white">
+            <CursorGlow />
             <Header />
 
             <main className="flex-grow">
-              <AnimatePresence>{isLoading && <LoadingPage />}</AnimatePresence>
-              <CursorGlow />
-
-              <Suspense fallback={null}>
+              <Suspense fallback={<LoadingPage />}>
                 <Routes>
                   <Route path="/" element={<LazyHome />} />
                   <Route path="/team" element={<LazyTeam />} />
@@ -51,12 +40,13 @@ function App() {
                   <Route path="/projects" element={<LazyProjects />} />
                   <Route path="/contact" element={<LazyContact />} />
                   <Route path="/login" element={<LazyLogin />} />
-                  <Route path="/auth/callback" element={<LazyAuthCallback />} />
                   <Route path="/dummy" element={<LazyDummy />} />
+                  <Route path="/profile" element={<LazyProfile />} />
                   <Route path="*" element={<LazyNotFound />} />
                 </Routes>
               </Suspense>
             </main>
+
             <Footer />
           </div>
         </div>
