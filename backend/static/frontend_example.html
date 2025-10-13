@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSESA Authentication Demo</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .auth-section, .profile-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .hidden { display: none; }
+        .error { color: red; margin: 10px 0; }
+        .success { color: green; margin: 10px 0; }
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .role-president { background: #dc3545; color: white; }
+        .role-domain_head { background: #fd7e14; color: white; }
+        .role-coordinator { background: #20c997; color: white; }
+        .role-associate { background: #6c757d; color: white; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .logout-btn { background: #dc3545; }
+        .logout-btn:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 CSESA Authentication Demo</h1>
+        <p>This demo shows Google OAuth authentication with organization-based access control.</p>
+        
+        <!-- Authentication Section -->
+        <div id="auth-section" class="auth-section">
+            <h2>🔐 Authentication</h2>
+            <p>Sign in with your organization Google account to access the system.</p>
+            
+            <div id="g_id_onload"
+                 data-client_id="839760133256-tmsv6s42s19b9a7f8hc15h69564rmhud.apps.googleusercontent.com"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin" 
+                 data-type="standard" 
+                 data-size="large" 
+                 data-theme="outline" 
+                 data-text="sign_in_with" 
+                 data-shape="rectangular" 
+                 data-logo_alignment="left">
+            </div>
+            
+            <div id="auth-error" class="error hidden"></div>
+            <div id="auth-success" class="success hidden"></div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profile-section" class="profile-section hidden">
+            <h2>👤 User Profile</h2>
+            <div id="user-info" class="user-info"></div>
+            
+            <h3>🔧 Test API Endpoints</h3>
+            <button onclick="testProfileEndpoint()">Get Profile</button>
+            <button onclick="testProjectsEndpoint()">Get Projects</button>
+            <button onclick="testEventsEndpoint()">Get Events</button>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+            
+            <div id="api-results" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentUser = null;
+
+        // Handle Google OAuth response
+        function handleCredentialResponse(response) {
+            console.log('Google credential received');
+            
+            // For this demo, we'll simulate the token exchange
+            // In a real implementation, you'd extract the access token from the JWT
+            simulateGoogleAuth(response.credential);
+        }
+
+        // Simulate Google authentication (replace with actual implementation)
+        function simulateGoogleAuth(credential) {
+            showMessage('auth-success', 'Processing Google authentication...');
+            
+            // In a real implementation, you would:
+            // 1. Extract access token from the credential JWT
+            // 2. Send it to your backend
+            
+            // For demo purposes, we'll simulate a successful response
+            setTimeout(() => {
+                const mockUser = {
+                    id: 1,
+                    email: 'cse240001043@iiti.ac.in',
+                    first_name: 'Abhishek',
+                    last_name: 'Mane',
+                    role: 'ASSOCIATE',
+                    is_onboarded: true
+                };
+                
+                const mockTokens = {
+                    access_token: 'demo-jwt-access-token',
+                    refresh_token: 'demo-jwt-refresh-token'
+                };
+                
+                handleAuthSuccess(mockUser, mockTokens);
+            }, 1000);
+        }
+
+        // Handle successful authentication
+        function handleAuthSuccess(user, tokens) {
+            currentUser = user;
+            localStorage.setItem('access_token', tokens.access_token);
+            localStorage.setItem('refresh_token', tokens.refresh_token);
+            
+            showMessage('auth-success', `Welcome, ${user.first_name}! Authentication successful.`);
+            
+            setTimeout(() => {
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('profile-section').classList.remove('hidden');
+                displayUserInfo(user);
+            }, 1500);
+        }
+
+        // Display user information
+        function displayUserInfo(user) {
+            const roleClass = `role-${user.role.toLowerCase()}`;
+            const userInfoHtml = `
+                <h3>User Information</h3>
+                <p><strong>Name:</strong> ${user.first_name} ${user.last_name}</p>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Role:</strong> <span class="role-badge ${roleClass}">${user.role}</span></p>
+                <p><strong>Onboarded:</strong> ${user.is_onboarded ? '✅ Yes' : '❌ No'}</p>
+            `;
+            document.getElementById('user-info').innerHTML = userInfoHtml;
+        }
+
+        // Test API endpoints
+        function testProfileEndpoint() {
+            showApiResult('Testing Profile Endpoint...', 'info');
+            
+            // Simulate API call
+            setTimeout(() => {
+                const result = {
+                    endpoint: '/api/auth/profile/',
+                    method: 'GET',
+                    status: 200,
+                    response: currentUser
+                };
+                showApiResult(JSON.stringify(result, null, 2), 'success');
+            }, 500);
+        }
+
+        function testProjectsEndpoint() {
+            showApiResult('Testing Projects Endpoint...', 'info');
+            
+            setTimeout(() => {
+                const result = {
+                    endpoint: '/api/projects/',
+                    method: 'GET',
+                    status: currentUser.role === 'ASSOCIATE' ? 403 : 200,
+                    response: currentUser.role === 'ASSOCIATE' 
+                        ? { error: 'Permission denied. Leadership role required.' }
+                        : [
+                            { id: 1, name: 'Web Development Project', status: 'active' },
+                            { id: 2, name: 'Mobile App Project', status: 'planning' }
+                          ]
+                };
+                showApiResult(JSON.stringify(result, null, 2), 
+                             result.status === 200 ? 'success' : 'error');
+            }, 500);
+        }
+
+        function testEventsEndpoint() {
+            showApiResult('Testing Events Endpoint...', 'info');
+            
+            setTimeout(() => {
+                const result = {
+                    endpoint: '/api/events/',
+                    method: 'GET',
+                    status: 200,
+                    response: [
+                        { id: 1, name: 'Tech Talk', date: '2024-02-15' },
+                        { id: 2, name: 'Workshop', date: '2024-02-20' }
+                    ]
+                };
+                showApiResult(JSON.stringify(result, null, 2), 'success');
+            }, 500);
+        }
+
+        // Utility functions
+        function showMessage(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.classList.remove('hidden');
+            
+            // Hide error messages after 5 seconds
+            if (elementId.includes('error')) {
+                setTimeout(() => element.classList.add('hidden'), 5000);
+            }
+        }
+
+        function showApiResult(result, type) {
+            const resultsDiv = document.getElementById('api-results');
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';
+            resultsDiv.innerHTML = `<pre class="${className}">${result}</pre>`;
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            currentUser = null;
+            
+            document.getElementById('profile-section').classList.add('hidden');
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('auth-success').classList.add('hidden');
+            document.getElementById('api-results').innerHTML = '';
+            
+            showMessage('auth-success', 'Logged out successfully.');
+        }
+
+        // Check if user is already logged in
+        window.onload = function() {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                // In a real app, you'd validate the token with the backend
+                console.log('User appears to be logged in');
+            }
+        };
+    </script>
+
+    <div style="margin-top: 40px; padding: 20px; background: #e9ecef; border-radius: 5px;">
+        <h3>📝 Implementation Notes</h3>
+        <ul>
+            <li><strong>Google Client ID:</strong> Using client ID: 839760133256-tmsv6s42s19b9a7f8hc15h69564rmhud.apps.googleusercontent.com</li>
+            <li><strong>Real Authentication:</strong> This demo simulates the authentication flow. In production, implement the actual token exchange with your backend</li>
+            <li><strong>API Endpoints:</strong> The API calls are simulated. Replace with actual fetch calls to your Django backend</li>
+            <li><strong>Organization Domain:</strong> Configure your allowed domain in Django settings</li>
+            <li><strong>Role-based Access:</strong> Different roles will have different permissions as demonstrated in the API tests</li>
+        </ul>
+    </div>
+</body>
+</html>
