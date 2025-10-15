@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
 
-     # Your apps
     'api',
     'users',
     'projects',
@@ -121,7 +120,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-# JWT Configuration
 from datetime import timedelta
 
 SIMPLE_JWT = {
@@ -204,7 +202,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Email Configuration
 import os
 from pathlib import Path
 
