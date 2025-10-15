@@ -7,7 +7,7 @@ from .settings import *
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    'abhishek1911.pythonanywhere.com',  
+    'youruserid.pythonanywhere.com',  
     'localhost',
     '127.0.0.1'
 ]
@@ -37,11 +37,11 @@ DATABASES = {
 
 # Static files settings for production
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/abhishek1911/csesa-backend/staticfiles'  # Replace with your username
+STATIC_ROOT = '/home/youruserid/csesa-backend/static'  # Replace with your username
 
 # Media files settings
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/abhishek1911/csesa-backend/media'  # Replace with your username
+MEDIA_ROOT = '/home/youruserid/csesa-backend/media'  # Replace with your username
 
 # Security settings for production
 SECURE_BROWSER_XSS_FILTER = True
