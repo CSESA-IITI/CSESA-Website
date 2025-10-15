@@ -1,10 +1,2 @@
-Django==5.2.4
-djangorestframework==3.15.2
-djangorestframework-simplejwt==5.3.0
-django-cors-headers==4.4.0
-Pillow==10.4.0
-python-decouple==3.8
-psycopg2-binary==2.9.9
-gunicorn==23.0.0
-whitenoise==6.7.0
-dj-database-url==2.2.0
+# For Render deployment, use the production requirements
+-r requirements-production.txt
