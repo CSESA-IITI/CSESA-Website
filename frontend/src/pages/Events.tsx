@@ -13,7 +13,7 @@ const Events: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const { addToast } = useToast();
   
-  const [events, setEvents] = useState<Event[]>([]);
+  const [, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
