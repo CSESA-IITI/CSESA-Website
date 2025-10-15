@@ -1,0 +1,22 @@
+.bounce {
+    animation-name: bounce;
+    animation-duration: 1.5s; 
+    animation-iteration-count: infinite; 
+    animation-timing-function: ease-in-out; 
+    animation-fill-mode: both; 
+}
+
+@keyframes bounce {
+    0%, 100% {
+      transform: translateY(0); /* Start and end at the original position */
+      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+      transform: translateY(-25px); /* Move upwards by 25px (adjust as needed) */
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+}
+
+/* .internal-shadow-box {
+  box-shadow: inset 0 0 10px rgba(7, 160, 255, 0.5);
+} */
