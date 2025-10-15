@@ -8,7 +8,7 @@ services:
     name: csesa-backend
     runtime: python3
     buildCommand: "./build.sh"
-    startCommand: "gunicorn csesa_backend.wsgi:application"
+    startCommand: "./start.sh"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -18,3 +18,5 @@ services:
         generateValue: true
       - key: WEB_CONCURRENCY
         value: 4
+      - key: PORT
+        value: 10000
