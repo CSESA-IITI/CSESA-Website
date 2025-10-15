@@ -10,5 +10,8 @@ python manage.py migrate
 # Create superuser if environment variables are set
 python manage.py create_superuser
 
+# Create default domain
+python manage.py create_default_domain
+
 # Make start script executable
 chmod +x start.sh

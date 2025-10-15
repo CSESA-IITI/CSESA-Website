@@ -91,7 +91,6 @@ export const updateProject = async (projectId: string, projectData: any): Promis
   }
 };
 
-// Enhanced contributor management functions with better error handling
 export const addContributors = async (
   projectId: string, 
   userIds: number[]

@@ -91,9 +91,28 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onPr
       setErrors({});
       
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create project:', error);
-      setErrors({ submit: 'Failed to create project. Please try again.' });
+      console.error('Error response:', error.response?.data);
+      
+      // Show specific validation errors if available
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        const newErrors: {[key: string]: string} = {};
+        
+        // Handle field-specific errors
+        Object.keys(errorData).forEach(field => {
+          if (Array.isArray(errorData[field])) {
+            newErrors[field] = errorData[field][0];
+          } else {
+            newErrors[field] = errorData[field];
+          }
+        });
+        
+        setErrors(newErrors);
+      } else {
+        setErrors({ submit: 'Failed to create project. Please try again.' });
+      }
     }
   };
 

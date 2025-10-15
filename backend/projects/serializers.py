@@ -70,7 +70,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'add_self_as_contributor', # New field for self-assignment
             'available_contributors', # New field for available users
         ]
-        # These fields will accept a list of Primary Keys (IDs) during POST/PUT requests
         extra_kwargs = {
             'domains': {'write_only': True},
             'team_members': {'write_only': True, 'required': False},  # Make team_members optional
@@ -80,14 +79,34 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_available_contributors(self, obj):
         """Return users who can be added as contributors"""
         if obj and obj.pk:
-            # For existing projects, exclude current team members
             current_member_ids = obj.team_members.values_list('id', flat=True)
             available_users = CustomUser.objects.exclude(id__in=current_member_ids)
         else:
-            # For new projects, return all users
             available_users = CustomUser.objects.all()
         
         return ProjectMemberSerializer(available_users, many=True).data
+
+    def validate_domains(self, value):
+        """Validate that all domain IDs exist"""
+        if not value:
+            raise serializers.ValidationError("At least one domain is required.")
+        
+        # Convert Domain objects to IDs if needed
+        domain_ids = []
+        for item in value:
+            if hasattr(item, 'id'):  # It's a Domain object
+                domain_ids.append(item.id)
+            else:  # It's already an ID
+                domain_ids.append(int(item))
+        
+        from .models import Domain
+        existing_domain_ids = set(Domain.objects.filter(id__in=domain_ids).values_list('id', flat=True))
+        invalid_ids = set(domain_ids) - existing_domain_ids
+        
+        if invalid_ids:
+            raise serializers.ValidationError(f"Invalid domain IDs: {list(invalid_ids)}")
+        
+        return domain_ids
 
     def create(self, validated_data):
         """Handle project creation with automatic self-assignment"""
