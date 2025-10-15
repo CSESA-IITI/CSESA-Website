@@ -1,5 +1,16 @@
 {
-  
+  "name": "csesa",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
   "dependencies": {
     "@codaworks/react-glow": "^1.0.6",
     "@react-oauth/google": "^0.12.2",
