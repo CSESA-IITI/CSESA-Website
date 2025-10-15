@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getEvents, deleteEvent } from "../services/api";
+import eventService, { Event } from "../services/eventService";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import AddEventModal from "../components/AddEventModal";
 import EditEventModal from "../components/EditEventModal";
-import { EventResponse } from "../services/api";
 
-type EventType = EventResponse & {
+type EventType = Event & {
   image?: string;
+  name?: string;
+  tags?: string;
 };
 
 const PastEvents: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { addToast } = useToast();
   const [events, setEvents] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,8 +27,8 @@ const PastEvents: React.FC = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await getEvents();
-        setEvents(response.data);
+        const events = await eventService.getAllEvents();
+        setEvents(events);
       } catch (err) {
         setError("Failed to fetch events. Please try again later.");
         console.error(err);
@@ -41,7 +42,7 @@ const PastEvents: React.FC = () => {
 
   const canManageEvents = user && (user.role === 'PRESIDENT' || user.role === 'HEAD');
 
-  const handleAddEvent = (newEvent: EventResponse) => {
+  const handleAddEvent = (newEvent: Event) => {
     setEvents([newEvent, ...events]);
   };
 
@@ -50,7 +51,7 @@ const PastEvents: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateEvent = (updatedEvent: EventResponse) => {
+  const handleUpdateEvent = (updatedEvent: Event) => {
     setEvents(events.map(event => 
       event.id === updatedEvent.id ? updatedEvent : event
     ));
@@ -59,7 +60,7 @@ const PastEvents: React.FC = () => {
 
   const handleDeleteEvent = async (event: EventType) => {
     try {
-      await deleteEvent(event.id.toString());
+      await eventService.deleteEvent(event.id);
       setEvents(events.filter(e => e.id !== event.id));
       setConfirmDelete(null);
       setSelectedEvent(null);
@@ -173,20 +174,22 @@ const PastEvents: React.FC = () => {
                 <div onClick={() => setSelectedEvent(event)} className="cursor-pointer">
                   <img
                     src={event.image || `https://source.unsplash.com/random/400x400?technology,event&sig=${event.id}`}
-                    alt={event.name}
+                    alt={event.title}
                     className="rounded-lg mb-4 h-48 w-full object-cover"
                   />
-                  <h3 className="text-lg font-semibold mb-2 text-white vamos">{event.name}</h3>
+                  <h3 className="text-lg font-semibold mb-2 text-white vamos">{event.title}</h3>
                   <p className="text-sm text-gray-300 mb-2 alegreya-sans-sc-regular">
                     {new Date(event.date).toLocaleDateString()} | {event.location}
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {event.tags.split(',').map((tag, index) => (
-                      <span key={index} className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded-full">
-                        {tag.trim()}
-                      </span>
-                    ))}
-                  </div>
+                  {event.tags && (
+                    <div className="flex flex-wrap gap-2">
+                      {event.tags.split(',').map((tag: string, index: number) => (
+                        <span key={index} className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded-full">
+                          {tag.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -211,7 +214,7 @@ const PastEvents: React.FC = () => {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-2xl font-bold">{selectedEvent.name}</h3>
+                  <h3 className="text-2xl font-bold">{selectedEvent.title}</h3>
                   {canManageEvents && (
                     <div className="flex gap-2">
                       <button
@@ -232,13 +235,15 @@ const PastEvents: React.FC = () => {
                 <p className="text-sm text-gray-400 mb-2">
                   {new Date(selectedEvent.date).toLocaleDateString()} at {new Date(selectedEvent.date).toLocaleTimeString()} | {selectedEvent.location}
                 </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {selectedEvent.tags.split(',').map((tag, index) => (
-                    <span key={index} className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded-full">
-                      {tag.trim()}
-                    </span>
-                  ))}
-                </div>
+                {selectedEvent.tags && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {selectedEvent.tags.split(',').map((tag: string, index: number) => (
+                      <span key={index} className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded-full">
+                        {tag.trim()}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <p className="mb-4 text-gray-300">{selectedEvent.description}</p>
                 <button
                   className="absolute top-3 right-4 text-gray-400 hover:text-white text-3xl"
@@ -270,7 +275,7 @@ const PastEvents: React.FC = () => {
               >
                 <h3 className="text-xl font-bold mb-4 text-red-400">Delete Event</h3>
                 <p className="mb-6 text-gray-300">
-                  Are you sure you want to delete "{confirmDelete.name}"? This action cannot be undone.
+                  Are you sure you want to delete "{confirmDelete.title}"? This action cannot be undone.
                 </p>
                 <div className="flex gap-3">
                   <button
