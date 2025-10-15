@@ -1,15 +1,16 @@
 """
-Production settings for PythonAnywhere deployment
+Production settings for Render deployment
 """
 import os
+import dj_database_url
 from .settings import *
 
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = [
-    'youruserid.pythonanywhere.com',  
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    '.onrender.com',  # Allow all Render subdomains
 ]
 
 # CORS settings for production - Update with your Vercel domain
@@ -23,30 +24,42 @@ CORS_ORIGIN_WHITELIST = [
     'https://your-app-name.vercel.app',  # Replace with your actual Vercel domain
 ]
 
-# Database - PythonAnywhere uses MySQL
+CORS_ALLOW_CREDENTIALS = True
+
+# Database - Render provides PostgreSQL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'yourusername$csesa_db',  # Replace with your database name
-        'USER': 'yourusername',  # Replace with your PythonAnywhere username
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),  # Set this in PythonAnywhere console
-        'HOST': 'yourusername.mysql.pythonanywhere-services.com',  # Replace with your username
-        'PORT': '3306',
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
-# Static files settings for production
+# Static files configuration for Render
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/youruserid/csesa-backend/static'  # Replace with your username
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Add WhiteNoise for static file serving
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
+# WhiteNoise configuration
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files settings
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/youruserid/csesa-backend/media'  # Replace with your username
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Security settings for production
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+
+# HTTPS settings (Render provides HTTPS automatically)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 # Email settings for production
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
