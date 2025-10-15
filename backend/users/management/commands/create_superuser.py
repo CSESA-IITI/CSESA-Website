@@ -21,20 +21,17 @@ class Command(BaseCommand):
         existing_user = User.objects.filter(email=email).first()
         
         if existing_user:
-            # Check if the existing user has an unusable password
-            if not existing_user.has_usable_password():
-                self.stdout.write(
-                    self.style.WARNING(f'Superuser {email} exists but has unusable password. Updating password...')
-                )
-                existing_user.set_password(password)
-                existing_user.save()
-                self.stdout.write(
-                    self.style.SUCCESS(f'Superuser {email} password updated successfully')
-                )
-            else:
-                self.stdout.write(
-                    self.style.WARNING(f'Superuser {email} already exists with usable password')
-                )
+            # Always update the password to ensure it matches the environment variable
+            self.stdout.write(
+                self.style.WARNING(f'Superuser {email} exists. Updating password to match environment variable...')
+            )
+            existing_user.set_password(password)
+            existing_user.is_staff = True
+            existing_user.is_superuser = True
+            existing_user.save()
+            self.stdout.write(
+                self.style.SUCCESS(f'Superuser {email} password updated successfully')
+            )
             return
         
         # Create new superuser
