@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import eventService, { Event, EventAPIError } from '../services/eventService';
-import { useAuth } from '../contexts/AuthContext';
+// import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 
 interface EditEventModalProps {
@@ -17,7 +17,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   onEventUpdated, 
   event 
 }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const { addToast } = useToast();
   const [title, setTitle] = useState(event.title);
   const [description, setDescription] = useState(event.description);

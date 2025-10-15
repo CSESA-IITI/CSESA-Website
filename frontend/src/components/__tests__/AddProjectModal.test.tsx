@@ -25,13 +25,14 @@ const mockCurrentUser: User = {
   first_name: 'Current',
   last_name: 'User',
   role: 'President',
-  department: 'Computer Science',
+  domain : 'ML',
   year: '2024',
   bio: 'Current user bio',
-  image: 'https://example.com/current.jpg',
+  image_url: 'https://example.com/current.jpg',
   skills: [{ name: 'React' }],
   github_link: 'https://github.com/current',
-  linkedin_link: 'https://linkedin.com/in/current'
+  linkedin_link: 'https://linkedin.com/in/current',
+  is_onboarded : true
 };
 
 const mockAllUsers: User[] = [
@@ -41,13 +42,14 @@ const mockAllUsers: User[] = [
     first_name: 'John',
     last_name: 'Doe',
     role: 'Domain Head',
-    department: 'Computer Science',
+    domain : 'Web Dev',
     year: '2023',
     bio: 'John bio',
-    image: 'https://example.com/john.jpg',
+    image_url: 'https://example.com/john.jpg',
     skills: [{ name: 'JavaScript' }],
     github_link: 'https://github.com/john',
-    linkedin_link: 'https://linkedin.com/in/john'
+    linkedin_link: 'https://linkedin.com/in/john',
+    is_onboarded:false
   },
   {
     id: '3',
@@ -55,13 +57,14 @@ const mockAllUsers: User[] = [
     first_name: 'Jane',
     last_name: 'Smith',
     role: 'Coordinator',
-    department: 'Electrical Engineering',
+    domain: 'ML',
     year: '2024',
     bio: 'Jane bio',
-    image: '',
+    image_url: '',
     skills: [{ name: 'Python' }],
     github_link: 'https://github.com/jane',
-    linkedin_link: 'https://linkedin.com/in/jane'
+    linkedin_link: 'https://linkedin.com/in/jane',
+    is_onboarded : true
   }
 ];
 

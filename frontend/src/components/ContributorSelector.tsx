@@ -24,7 +24,6 @@ const ContributorSelector: React.FC<ContributorSelectorProps> = ({
   onContributorChange,
   showAddSelfOption = true,
   addSelfAsContributor = true,
-  onAddSelfChange,
   className,
   maxHeight = 'max-h-60',
   error,

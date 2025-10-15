@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { createProject } from '../services/api';
 import { User } from '../services/authService';
 import ContributorSelector from './ContributorSelector';
-import { useAuth } from '../contexts/AuthContext';
+// import { useAuth } from '../contexts/AuthContext';
 
 interface AddProjectModalProps {
   isOpen: boolean;
@@ -13,7 +13,7 @@ interface AddProjectModalProps {
 }
 
 const AddProjectModal: React.FC<AddProjectModalProps> = ({ isOpen, onClose, onProjectAdded, allUsers }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [techStack, setTechStack] = useState('');

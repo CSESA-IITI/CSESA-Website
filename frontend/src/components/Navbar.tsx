@@ -148,7 +148,7 @@ const FuturisticNavbar: React.FC = () => {
             >
               <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-6">
                 <div className="flex flex-col space-y-4">
-                  {navItems.map((item, index) => (
+                  {navItems.map((item) => (
                     <Link
                       key={item.name}
                       to={item.href}

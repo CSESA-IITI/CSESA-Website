@@ -16,6 +16,7 @@ const ContributorErrorBoundary: React.FC<ContributorErrorBoundaryProps> = ({ chi
       message: 'An unexpected error occurred in the contributor management system. Please try refreshing the page.',
       duration: 8000,
     });
+    console.log(error);
   };
 
   const fallback = (
