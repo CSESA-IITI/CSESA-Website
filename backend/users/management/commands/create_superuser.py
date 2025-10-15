@@ -17,12 +17,27 @@ class Command(BaseCommand):
             )
             return
         
-        if User.objects.filter(email=email).exists():
-            self.stdout.write(
-                self.style.WARNING(f'Superuser {email} already exists')
-            )
+        # Check if user exists
+        existing_user = User.objects.filter(email=email).first()
+        
+        if existing_user:
+            # Check if the existing user has an unusable password
+            if not existing_user.has_usable_password():
+                self.stdout.write(
+                    self.style.WARNING(f'Superuser {email} exists but has unusable password. Updating password...')
+                )
+                existing_user.set_password(password)
+                existing_user.save()
+                self.stdout.write(
+                    self.style.SUCCESS(f'Superuser {email} password updated successfully')
+                )
+            else:
+                self.stdout.write(
+                    self.style.WARNING(f'Superuser {email} already exists with usable password')
+                )
             return
         
+        # Create new superuser
         User.objects.create_superuser(
             email=email,
             password=password
