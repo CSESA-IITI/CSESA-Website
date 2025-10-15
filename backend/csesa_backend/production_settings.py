@@ -14,15 +14,21 @@ ALLOWED_HOSTS = [
 ]
 
 # CORS settings for production - Update with your Vercel domain
+# CORS settings for production - configurable via environment variables
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://csesa-website-pi.vercel.app')
+
 CORS_ALLOWED_ORIGINS = [
-    'https://your-app-name.vercel.app',  # Replace with your actual Vercel domain
+    FRONTEND_URL,
     'http://localhost:5173',  # Keep for local development
     'http://localhost:5174',
 ]
 
 CORS_ORIGIN_WHITELIST = [
-    'https://your-app-name.vercel.app',  # Replace with your actual Vercel domain
+    FRONTEND_URL,
 ]
+
+# Allow all origins if CORS_ALLOW_ALL is set to 'true'
+CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL', 'false').lower() == 'true'
 
 CORS_ALLOW_CREDENTIALS = True
 
