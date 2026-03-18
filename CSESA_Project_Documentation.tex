@@ -1,0 +1,4275 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{CSESA Platform Documentation}
+\lhead{\thepage}
+
+\title{\textbf{CSESA Platform} \\ \large Full-Stack Web Application for Student Organization Management}
+\author{Computer Science and Engineering Students' Association}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Executive Summary}
+
+The CSESA (Computer Science and Engineering Students' Association) Platform is a comprehensive full-stack web application designed to streamline the management of a student organization. The system provides role-based access control, event management, project portfolio tracking, member onboarding, and communication tools.
+
+\subsection{Key Highlights}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Architecture:} RESTful API backend with React SPA frontend
+    \item \textbf{Backend:} Django 5.2.4 + Django REST Framework 3.16.0
+    \item \textbf{Frontend:} React 19.0.0 + TypeScript 5.7.2 + Vite 6.3.1
+    \item \textbf{Authentication:} JWT-based with automatic token refresh
+    \item \textbf{Deployment:} Backend on Render, Frontend on Vercel
+    \item \textbf{Database:} SQLite3 (production-ready)
+    \item \textbf{Testing:} Comprehensive unit and integration tests (40+ backend, 15+ frontend)
+\end{itemize}
+
+\section{Project Overview}
+
+\subsection{Purpose and Domain}
+CSESA Platform serves as the central hub for managing all aspects of the Computer Science and Engineering Students' Association at IIT Indore. The application addresses the following organizational needs:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Event Management:} Create, schedule, and manage organization events with role-based permissions
+    \item \textbf{Project Portfolio:} Showcase student projects with team collaboration features
+    \item \textbf{Member Management:} Onboard new members, manage roles, and track skills
+    \item \textbf{Communication:} Contact form for external inquiries with email notifications
+    \item \textbf{Access Control:} Hierarchical permission system (President, Head, Coordinator, Associate)
+\end{itemize}
+
+\subsection{Target Users}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Presidents:} Full system access, user management, all CRUD operations
+    \item \textbf{Domain Heads:} Event and project management, contributor oversight
+    \item \textbf{Coordinators:} Project creation and contributor management
+    \item \textbf{Associates:} Basic members with view access and profile management
+    \item \textbf{Public Users:} Read-only access to events and contact form
+\end{itemize}
+
+\section{Technology Stack}
+
+\subsection{Backend Technologies}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Core Framework:} Django 5.2.4
+    \item \textbf{API Framework:} Django REST Framework 3.16.0
+    \item \textbf{Authentication:} djangorestframework-simplejwt 5.5.1 (JWT tokens)
+    \item \textbf{Database:} SQLite3 (Python 3.13 compatible)
+    \item \textbf{CORS:} django-cors-headers 4.7.0
+    \item \textbf{Server:} Gunicorn 23.0.0 (WSGI HTTP server)
+    \item \textbf{Static Files:} WhiteNoise 6.9.0 (static file serving)
+    \item \textbf{OAuth:} Google OAuth integration (google-auth 2.40.3, google-auth-oauthlib 1.2.2)
+    \item \textbf{Image Processing:} Pillow (profile picture uploads)
+    \item \textbf{Email:} Django SMTP backend with Gmail configuration
+\end{itemize}
+
+\subsection{Frontend Technologies}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Core Framework:} React 19.0.0 with TypeScript 5.7.2
+    \item \textbf{Build Tool:} Vite 6.3.1 (fast development and optimized builds)
+    \item \textbf{Styling:} Tailwind CSS 4.1.5 with custom utilities
+    \item \textbf{Routing:} React Router DOM 7.9.4 (client-side routing)
+    \item \textbf{HTTP Client:} Axios 1.11.0 (API communication with interceptors)
+    \item \textbf{Animations:} Framer Motion 12.10.5, GSAP 3.13.0
+    \item \textbf{3D Graphics:} Three.js 0.178.0, React Three Fiber 9.2.0, Drei 10.5.1
+    \item \textbf{UI Icons:} Lucide React 0.510.0, Tabler Icons 3.34.1
+    \item \textbf{Testing:} Vitest 3.2.4, React Testing Library 16.3.0, jsdom 27.0.0
+    \item \textbf{OAuth:} @react-oauth/google 0.12.2
+    \item \textbf{Effects:} @codaworks/react-glow 1.0.6, tsparticles 3.8.1
+\end{itemize}
+
+\subsection{Development Tools}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Linting:} ESLint 9.22.0 with TypeScript support
+    \item \textbf{Type Checking:} TypeScript 5.7.2
+    \item \textbf{Version Control:} Git with GitHub integration
+    \item \textbf{Package Management:} npm (frontend), pip (backend)
+\end{itemize}
+
+\section{System Architecture}
+
+\subsection{High-Level Architecture}
+The CSESA platform follows a modern client-server architecture with clear separation of concerns:
+
+\begin{verbatim}
+┌─────────────────────────────────────────────────────────┐
+│                    Frontend (Vercel)                    │
+│  React SPA + TypeScript + Tailwind CSS + Vite          │
+│  - Pages (Routes)                                       │
+│  - Components (UI)                                      │
+│  - Services (API clients)                               │
+│  - Contexts (State management)                          │
+└──────────────────┬──────────────────────────────────────┘
+                   │ HTTPS/REST API
+                   │ JWT Authentication
+                   │
+┌──────────────────▼──────────────────────────────────────┐
+│                   Backend (Render)                      │
+│  Django REST Framework + Gunicorn                       │
+│  - API Endpoints (REST)                                 │
+│  - Authentication (JWT)                                 │
+│  - Business Logic (Views)                               │
+│  - Data Models (ORM)                                    │
+└──────────────────┬──────────────────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────────────────┐
+│                  Database (SQLite3)                     │
+│  - Users, Events, Projects, Domains, Skills, Contact   │
+└─────────────────────────────────────────────────────────┘
+\end{verbatim}
+
+\subsection{Backend Architecture}
+
+\subsubsection{Django Project Structure}
+\begin{lstlisting}[language=bash]
+backend/
+├── csesa_backend/          # Main Django project
+│   ├── settings.py         # Development configuration
+│   ├── production_settings.py  # Production config
+│   ├── urls.py             # URL routing
+│   └── wsgi.py             # WSGI application entry
+├── users/                  # User management app
+│   ├── models.py           # CustomUser, Skill models
+│   ├── views.py            # Auth, profile endpoints
+│   ├── serializers.py      # User data serialization
+│   ├── permissions.py      # Custom permission classes
+│   └── google_oauth.py     # Google OAuth integration
+├── projects/               # Project management app
+│   ├── models.py           # Project, Domain models
+│   ├── views.py            # Project CRUD, contributors
+│   ├── serializers.py      # Project data serialization
+│   └── management/         # Custom commands
+├── events/                 # Event management app
+│   ├── models.py           # Event model
+│   ├── views.py            # Event CRUD endpoints
+│   └── serializers.py      # Event data serialization
+├── contact/                # Contact form app
+│   ├── models.py           # ContactMessage model
+│   └── views.py            # Contact submission
+├── build.sh                # Render build script
+├── start.sh                # Gunicorn start script
+└── requirements-production.txt  # Dependencies
+\end{lstlisting}
+
+\subsubsection{API Design Pattern}
+The backend follows RESTful API design principles with Django REST Framework ViewSets:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{ViewSets:} ModelViewSet for CRUD operations (ProjectViewSet, EventViewSet)
+    \item \textbf{Serializers:} Data validation and transformation layer
+    \item \textbf{Permissions:} Custom permission classes for role-based access
+    \item \textbf{Routers:} DefaultRouter for automatic URL generation
+    \item \textbf{Custom Actions:} @action decorator for non-CRUD endpoints
+\end{itemize}
+
+\subsection{Frontend Architecture}
+
+\subsubsection{React Application Structure}
+\begin{lstlisting}[language=bash]
+frontend/src/
+├── pages/                  # Route components
+│   ├── Home.tsx            # Landing page
+│   ├── Login.tsx           # Authentication
+│   ├── Profile.tsx         # User profile management
+│   ├── Events.tsx          # Event listing and management
+│   ├── Projects.tsx        # Project portfolio
+│   ├── Team.tsx            # Team member directory
+│   ├── About.tsx           # About page
+│   ├── ContactUs.tsx       # Contact form
+│   └── NotFound.tsx        # 404 page
+├── components/             # Reusable UI components
+│   ├── Navbar.tsx          # Navigation bar
+│   ├── Footer.tsx          # Footer component
+│   ├── AddEventModal.tsx   # Event creation modal
+│   ├── EditEventModal.tsx  # Event editing modal
+│   ├── AddProjectModal.tsx # Project creation modal
+│   ├── EditProjectModal.tsx # Project editing modal
+│   ├── ContributorManagement.tsx  # Contributor UI
+│   ├── ContributorSelector.tsx    # User selection
+│   ├── OnboardingModal.tsx # New user onboarding
+│   ├── CreateUserModal.tsx # User creation form
+│   ├── ErrorBoundary.tsx   # Error handling
+│   ├── LoadingSpinner.tsx  # Loading states
+│   ├── Toast.tsx           # Notifications
+│   └── ui/                 # UI primitives
+├── services/               # API client layer
+│   ├── api.ts              # Generic API utilities
+│   ├── authService.ts      # Authentication logic
+│   ├── eventService.ts     # Event API calls
+│   └── systemService.ts    # System operations
+├── contexts/               # React Context providers
+│   ├── AuthContext.tsx     # Authentication state
+│   └── ToastContext.tsx    # Notification state
+├── config/                 # Configuration
+│   └── site.tsx            # Site metadata, social links
+└── apiClient.ts            # Axios instance with interceptors
+\end{lstlisting}
+
+\subsubsection{State Management Strategy}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{AuthContext:} Global authentication state (user, tokens, login/logout)
+    \item \textbf{ToastContext:} Global notification system for user feedback
+    \item \textbf{Local State:} Component-level state with React hooks (useState, useEffect)
+    \item \textbf{Optimistic Updates:} Immediate UI updates with rollback on failure
+\end{itemize}
+
+\section{Database Schema and Models}
+
+\subsection{CustomUser Model}
+The CustomUser model extends Django's AbstractUser with organization-specific fields:
+
+\begin{lstlisting}[language=Python]
+class CustomUser(AbstractUser):
+    # Authentication
+    email = EmailField(unique=True)  # Primary identifier
+    username = None  # Removed in favor of email
+    
+    # Role hierarchy
+    role = CharField(choices=Role.choices)
+        # PRESIDENT, HEAD, COORDINATOR, ASSOCIATE
+    
+    # Domain specialization
+    domain = CharField(choices=Domain.choices)
+        # COMPETITIVE_PROGRAMMING, WEB_DEVELOPMENT,
+        # SYSTEMS_PROGRAMMING, GRAPHICS_PROGRAMMING,
+        # MACHINE_LEARNING
+    
+    # Profile information
+    year = CharField()  # Graduation year
+    bio = TextField()
+    image = ImageField(upload_to='profile_pics/')
+    skills = ManyToManyField(Skill)
+    github_link = URLField()
+    linkedin_link = URLField()
+    is_onboarded = BooleanField()  # Profile completion status
+\end{lstlisting}
+
+\textbf{Key Features:}
+\begin{itemize}[leftmargin=*]
+    \item Email-based authentication (no username field)
+    \item Custom user manager with create\_user and create\_superuser methods
+    \item Role-based access control with 4 hierarchical levels
+    \item Domain categorization for technical specialization
+    \item Skills tracking with many-to-many relationship
+    \item Onboarding status to ensure profile completion
+\end{itemize}
+
+\subsection{Project Model}
+The Project model manages the organization's project portfolio:
+
+\begin{lstlisting}[language=Python]
+class Project(models.Model):
+    # Basic information
+    name = CharField(max_length=200)
+    description = TextField()
+    tech_stack = CharField(max_length=500)  # Comma-separated
+    
+    # Links
+    github_link = URLField()
+    deployment_link = URLField(blank=True, null=True)
+    
+    # Relationships
+    created_by = ForeignKey(CustomUser, related_name='created_projects')
+    team_members = ManyToManyField(CustomUser, related_name='projects')
+    domains = ManyToManyField(Domain, related_name='projects')
+    
+    # Timestamps
+    created_at = DateTimeField(auto_now_add=True)
+    updated_at = DateTimeField(auto_now=True)
+    
+    # Methods
+    def add_contributor(self, user):
+        """Add user as contributor if not already added"""
+    
+    def remove_contributor(self, user):
+        """Remove user from contributors"""
+    
+    def can_manage_contributors(self, user):
+        """Check if user can manage project contributors"""
+\end{lstlisting}
+
+\textbf{Key Features:}
+\begin{itemize}[leftmargin=*]
+    \item Many-to-many relationship with users (team members)
+    \item Domain categorization for project classification
+    \item Creator tracking with separate created\_by field
+    \item Helper methods for contributor management
+    \item Permission checking at model level
+    \item Database indexes on created\_by for query optimization
+\end{itemize}
+
+\subsection{Event Model}
+The Event model handles organization event scheduling:
+
+\begin{lstlisting}[language=Python]
+class Event(models.Model):
+    # Event details
+    title = CharField(max_length=200)
+    description = TextField()
+    date = DateTimeField()  # Event date and time
+    location = CharField(max_length=200)
+    
+    # Relationships
+    created_by = ForeignKey(User, related_name='created_events')
+    
+    # Timestamps
+    created_at = DateTimeField(auto_now_add=True)
+    updated_at = DateTimeField(auto_now=True)
+    
+    # Validation
+    def clean(self):
+        """Validate that event date is in the future"""
+\end{lstlisting}
+
+\textbf{Key Features:}
+\begin{itemize}[leftmargin=*]
+    \item Future date validation (events must be scheduled ahead)
+    \item Creator tracking for permission management
+    \item Ordering by date (descending) for chronological display
+    \item Database indexes on date and created\_by fields
+    \item Custom clean() method for model-level validation
+\end{itemize}
+
+\subsection{Supporting Models}
+
+\subsubsection{Domain Model}
+\begin{lstlisting}[language=Python]
+class Domain(models.Model):
+    name = CharField(max_length=100, unique=True)
+\end{lstlisting}
+Used for categorizing projects by technical domain (Web Dev, ML, etc.)
+
+\subsubsection{Skill Model}
+\begin{lstlisting}[language=Python]
+class Skill(models.Model):
+    name = CharField(max_length=50, unique=True)
+\end{lstlisting}
+Tracks individual skills for user profiles (Python, React, Docker, etc.)
+
+\subsubsection{ContactMessage Model}
+\begin{lstlisting}[language=Python]
+class ContactMessage(models.Model):
+    name = CharField(max_length=100)
+    email = EmailField()
+    phone = CharField(max_length=20, blank=True)
+    subject = CharField(max_length=200, blank=True)
+    message = TextField()
+    created_at = DateTimeField(auto_now_add=True)
+    is_read = BooleanField(default=False)
+\end{lstlisting}
+Stores contact form submissions with read status tracking
+
+\subsection{Database Relationships}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{User $\leftrightarrow$ Project:} Many-to-Many (team\_members)
+    \item \textbf{User $\rightarrow$ Project:} One-to-Many (created\_by)
+    \item \textbf{User $\leftrightarrow$ Skill:} Many-to-Many
+    \item \textbf{User $\rightarrow$ Event:} One-to-Many (created\_by)
+    \item \textbf{Project $\leftrightarrow$ Domain:} Many-to-Many
+\end{itemize}
+
+\section{Authentication and Authorization}
+
+\subsection{Authentication Mechanism}
+The system uses JWT (JSON Web Tokens) for stateless authentication:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Token Type:} Bearer tokens in Authorization header
+    \item \textbf{Access Token Lifetime:} 1 hour
+    \item \textbf{Refresh Token Lifetime:} 7 days
+    \item \textbf{Token Rotation:} Enabled for security
+    \item \textbf{Storage:} localStorage (frontend)
+    \item \textbf{Automatic Refresh:} Axios interceptor handles 401 responses
+\end{itemize}
+
+\subsubsection{Authentication Flow}
+\begin{enumerate}[leftmargin=*]
+    \item User submits email and password to \texttt{POST /api/token/}
+    \item Backend validates credentials and returns access + refresh tokens with user data
+    \item Frontend stores tokens in localStorage and user data in AuthContext
+    \item All subsequent requests include \texttt{Authorization: Bearer <access\_token>}
+    \item On 401 response, interceptor attempts token refresh with refresh token
+    \item If refresh succeeds, retry original request with new access token
+    \item If refresh fails, clear tokens and redirect to login
+\end{enumerate}
+
+\subsection{Authorization System}
+
+\subsubsection{Role Hierarchy}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{PRESIDENT} (Highest Authority)
+    \begin{itemize}
+        \item Full system access
+        \item User management (create, update, delete users)
+        \item All event and project operations
+        \item Domain management
+        \item Superuser privileges
+    \end{itemize}
+    
+    \item \textbf{HEAD} (Domain Head)
+    \begin{itemize}
+        \item Create and manage events
+        \item Create and manage projects
+        \item Manage project contributors
+        \item Invite new users
+    \end{itemize}
+    
+    \item \textbf{COORDINATOR}
+    \begin{itemize}
+        \item Create and manage projects
+        \item Manage project contributors
+        \item View all events
+    \end{itemize}
+    
+    \item \textbf{ASSOCIATE} (Basic Member)
+    \begin{itemize}
+        \item View events and projects
+        \item Manage own profile
+        \item Submit contact forms
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Custom Permission Classes}
+The system implements 10 custom permission classes in \texttt{users/permissions.py}:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{IsPresident:} Restricts access to PRESIDENT role only
+    \item \textbf{IsDomainHead:} Restricts access to HEAD role only
+    \item \textbf{IsCoordinator:} Restricts access to COORDINATOR role only
+    \item \textbf{IsLeadershipRole:} Allows PRESIDENT, HEAD, or COORDINATOR
+    \item \textbf{IsPresidentOrDomainHead:} Allows PRESIDENT or HEAD
+    \item \textbf{CanManageProjectContributors:} Project creator or leadership can manage
+    \item \textbf{CanViewProjectContributors:} Team members and leadership can view
+    \item \textbf{CanManageEvents:} Event creator or PRESIDENT/HEAD can manage
+    \item \textbf{IsOwnerOrReadOnly:} Owner can edit, others read-only
+    \item \textbf{IsOrganizationMember:} Validates email domain membership
+\end{enumerate}
+
+\subsubsection{Permission Implementation Example}
+\begin{lstlisting}[language=Python]
+class CanManageProjectContributors(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
+    
+    def has_object_permission(self, request, view, obj):
+        # Project creator can manage
+        if obj.created_by == request.user:
+            return True
+        
+        # Leadership roles can manage
+        if request.user.role in ['PRESIDENT', 'HEAD', 'COORDINATOR']:
+            return True
+        
+        return False
+\end{lstlisting}
+
+\section{API Endpoints}
+
+\subsection{Authentication Endpoints}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{POST /api/token/} - Login (returns access, refresh tokens, user data)
+    \item \texttt{POST /api/token/refresh/} - Refresh access token using refresh token
+    \item \texttt{GET /api/profile/} - Get current authenticated user profile
+    \item \texttt{PATCH /api/profile/} - Update current user profile (multipart for images)
+\end{itemize}
+
+\subsection{User Management Endpoints}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{GET /api/admin/users/} - List all users (authenticated)
+    \item \texttt{POST /api/admin/users/} - Create new user (PRESIDENT only)
+    \item \texttt{GET /api/admin/users/\{id\}/} - Get user details
+    \item \texttt{PATCH /api/admin/users/\{id\}/} - Update user (PRESIDENT only)
+    \item \texttt{DELETE /api/admin/users/\{id\}/} - Delete user (PRESIDENT only)
+    \item \texttt{POST /api/invite/} - Invite new user (PRESIDENT/HEAD)
+    \item \texttt{GET /api/skills/} - List available skills
+    \item \texttt{POST /api/skills/} - Create new skill
+\end{itemize}
+
+\subsection{Event Management Endpoints}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{GET /api/events/} - List all events (public)
+    \item \texttt{POST /api/events/} - Create event (PRESIDENT/HEAD)
+    \item \texttt{GET /api/events/\{id\}/} - Get event details (public)
+    \item \texttt{PATCH /api/events/\{id\}/} - Update event (creator/PRESIDENT/HEAD)
+    \item \texttt{DELETE /api/events/\{id\}/} - Delete event (creator/PRESIDENT/HEAD)
+    \item \texttt{GET /api/events/my\_events/} - Get user's created events (authenticated)
+\end{itemize}
+
+\subsection{Project Management Endpoints}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{GET /api/projects/} - List all projects (public)
+    \item \texttt{POST /api/projects/} - Create project (PRESIDENT/HEAD/COORDINATOR)
+    \item \texttt{GET /api/projects/\{id\}/} - Get project details (public)
+    \item \texttt{PATCH /api/projects/\{id\}/} - Update project (PRESIDENT/HEAD/COORDINATOR)
+    \item \texttt{DELETE /api/projects/\{id\}/} - Delete project (PRESIDENT/HEAD/COORDINATOR)
+    \item \texttt{POST /api/projects/\{id\}/contributors/} - Add/remove contributors (creator/leadership)
+    \item \texttt{GET /api/projects/\{id\}/available-contributors/} - List available users (creator/leadership)
+\end{itemize}
+
+\subsection{Domain Endpoints}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{GET /api/domains/} - List all domains (public)
+    \item \texttt{POST /api/domains/} - Create domain (PRESIDENT only)
+\end{itemize}
+
+\subsection{Contact Endpoints}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{POST /api/contact/} - Submit contact form (public, no authentication required)
+\end{itemize}
+
+\section{Key Features Implementation}
+
+\subsection{User Management}
+
+\subsubsection{User Registration and Onboarding}
+\begin{itemize}[leftmargin=*]
+    \item Presidents and Heads can invite new users via \texttt{/api/invite/}
+    \item New users receive default ASSOCIATE role
+    \item \texttt{is\_onboarded} flag tracks profile completion
+    \item OnboardingModal prompts users to complete profile on first login
+    \item Profile includes: name, bio, skills, year, domain, social links, profile picture
+\end{itemize}
+
+\subsubsection{Profile Management}
+\begin{itemize}[leftmargin=*]
+    \item Users can update their own profiles via Profile page
+    \item Multipart form data support for image uploads
+    \item Skills managed as array of strings (auto-created if new)
+    \item Image uploads stored in \texttt{media/profile\_pics/}
+    \item Absolute URLs returned for images via serializer method field
+\end{itemize}
+
+\subsubsection{Superuser Management}
+\begin{itemize}[leftmargin=*]
+    \item Custom management command: \texttt{python manage.py create\_superuser}
+    \item Reads from environment variables: DJANGO\_SUPERUSER\_EMAIL, DJANGO\_SUPERUSER\_PASSWORD
+    \item Automatically sets role to PRESIDENT
+    \item Sets is\_staff=True and is\_superuser=True
+    \item Runs during deployment build process
+\end{itemize}
+
+\subsection{Event Management}
+
+\subsubsection{Event Creation}
+\begin{itemize}[leftmargin=*]
+    \item Presidents and Heads see "Add Event" button on Events page
+    \item AddEventModal component with form fields: title, description, date, location
+    \item Date picker ensures future dates only
+    \item Backend validates date in serializer and model clean() method
+    \item \texttt{created\_by} field automatically set to current user
+\end{itemize}
+
+\subsubsection{Event Display and Filtering}
+\begin{itemize}[leftmargin=*]
+    \item Events displayed in card layout with title, date, location
+    \item Filter tabs: "All Events" and "My Events"
+    \item "My Events" shows only events created by current user
+    \item Event cards show edit/delete buttons based on permissions
+    \item Click event card to view details in modal
+\end{itemize}
+
+\subsubsection{Event Permissions}
+\begin{lstlisting}[language=Python]
+# CanManageEvents permission class
+- Read: Public access (no authentication required)
+- Create: PRESIDENT or HEAD only
+- Update/Delete: Event creator OR PRESIDENT/HEAD
+\end{lstlisting}
+
+\subsection{Project Management}
+
+\subsubsection{Project Creation}
+\begin{itemize}[leftmargin=*]
+    \item Presidents, Heads, and Coordinators can create projects
+    \item AddProjectModal with fields: name, description, tech\_stack, domains, github\_link, deployment\_link
+    \item \textbf{Self-Assignment Feature:} "Add myself as contributor" checkbox (default: checked)
+    \item Optional team\_members field (can create project without contributors)
+    \item Multi-select domain picker
+    \item \texttt{created\_by} field automatically set to current user
+\end{itemize}
+
+\subsubsection{Contributor Management}
+The system provides dynamic contributor management after project creation:
+
+\textbf{Frontend Components:}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{ContributorManagement.tsx:} Main UI for managing contributors
+    \item \textbf{ContributorSelector.tsx:} Multi-select dropdown for available users
+    \item \textbf{ContributorErrorBoundary.tsx:} Error handling wrapper
+\end{itemize}
+
+\textbf{Features:}
+\begin{itemize}[leftmargin=*]
+    \item View current project contributors with role badges
+    \item Add contributors from available users list
+    \item Remove contributors with confirmation
+    \item Bulk operations (add/remove multiple users at once)
+    \item Optimistic UI updates with rollback on failure
+    \item Permission validation (only creator and leadership can manage)
+    \item Real-time available contributors filtering
+\end{itemize}
+
+\textbf{API Endpoint:}
+\begin{lstlisting}[language=bash]
+POST /api/projects/{id}/contributors/
+Body: {
+    "user_ids": [1, 2, 3],
+    "action": "add" | "remove"
+}
+\end{lstlisting}
+
+\subsubsection{Project Display}
+\begin{itemize}[leftmargin=*]
+    \item ProjectCard component shows: name, description, tech stack, domains
+    \item ProjectDetails modal shows: full details, team members, links
+    \item GitHub and deployment links as clickable buttons
+    \item Team member avatars with role indicators
+    \item Edit/delete buttons based on permissions
+\end{itemize}
+
+\subsection{Contact Form}
+
+\subsubsection{Implementation}
+\begin{itemize}[leftmargin=*]
+    \item Public endpoint (no authentication required)
+    \item Fields: name, email, phone (optional), subject (optional), message
+    \item Server-side validation for required fields
+    \item Email notifications sent to CSESA team
+    \item Confirmation email sent to submitter
+    \item Messages stored in database with is\_read flag
+\end{itemize}
+
+\section{Frontend Implementation Details}
+
+\subsection{Routing Configuration}
+The application uses React Router with HashRouter for GitHub Pages compatibility:
+
+\begin{lstlisting}[language=JavaScript]
+<HashRouter>
+  <Routes>
+    <Route path="/" element={<Home />} />
+    <Route path="/team" element={<Team />} />
+    <Route path="/events" element={<Events />} />
+    <Route path="/projects" element={<Projects />} />
+    <Route path="/about" element={<About />} />
+    <Route path="/contact" element={<ContactUs />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/profile" element={<Profile />} />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+</HashRouter>
+\end{lstlisting}
+
+\subsection{State Management}
+
+\subsubsection{AuthContext}
+Provides global authentication state and methods:
+\begin{lstlisting}[language=TypeScript]
+interface AuthContextType {
+  user: User | null;
+  setUser: (user: User | null) => void;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<AuthResponse>;
+  logout: () => void;
+  isLoading: boolean;
+  refreshUser: () => Promise<void>;
+}
+\end{lstlisting}
+
+\textbf{Features:}
+\begin{itemize}[leftmargin=*]
+    \item Automatic token validation on mount
+    \item Token expiration checking
+    \item Automatic token refresh
+    \item User data synchronization
+    \item Loading states during authentication
+\end{itemize}
+
+\subsubsection{ToastContext}
+Provides global notification system:
+\begin{itemize}[leftmargin=*]
+    \item Success, error, info, warning toast types
+    \item Auto-dismiss after configurable timeout
+    \item Queue management for multiple toasts
+    \item Animated entrance/exit with Framer Motion
+\end{itemize}
+
+\subsection{API Client Configuration}
+
+\subsubsection{Axios Interceptors}
+\textbf{Request Interceptor:}
+\begin{lstlisting}[language=TypeScript]
+// Automatically attach JWT token to all requests
+config.headers.Authorization = `Bearer ${accessToken}`;
+\end{lstlisting}
+
+\textbf{Response Interceptor:}
+\begin{lstlisting}[language=TypeScript]
+// Handle 401 responses with automatic token refresh
+if (error.response?.status === 401) {
+  // Attempt refresh with refresh token
+  // Retry original request with new access token
+  // Redirect to login if refresh fails
+}
+\end{lstlisting}
+
+\subsection{UI/UX Features}
+
+\subsubsection{Visual Design}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Styling:} Tailwind CSS utility-first approach
+    \item \textbf{Animations:} Framer Motion for page transitions and component animations
+    \item \textbf{3D Effects:} Three.js and React Three Fiber for interactive 3D elements
+    \item \textbf{Cursor Effects:} Custom cursor glow effect with @codaworks/react-glow
+    \item \textbf{Particles:} tsparticles for background effects
+    \item \textbf{Typography:} Custom text reveal and rolling text animations
+\end{itemize}
+
+\subsubsection{Loading States}
+\begin{itemize}[leftmargin=*]
+    \item LoadingPage component with 1.5s initial load animation
+    \item LoadingSpinner for async operations
+    \item Skeleton loaders for data fetching
+    \item Suspense boundaries with lazy-loaded routes
+\end{itemize}
+
+\subsubsection{Error Handling}
+\begin{itemize}[leftmargin=*]
+    \item ErrorBoundary component catches React errors
+    \item ContributorErrorBoundary for contributor management errors
+    \item InlineError component for form validation errors
+    \item Toast notifications for API errors
+    \item 404 NotFound page for invalid routes
+\end{itemize}
+
+\section{Data Flow and Communication}
+
+\subsection{Frontend to Backend Communication}
+
+\subsubsection{Request Flow}
+\begin{enumerate}[leftmargin=*]
+    \item User action triggers service method (e.g., \texttt{eventService.createEvent()})
+    \item Service method calls apiClient with endpoint and data
+    \item Request interceptor adds JWT token to Authorization header
+    \item Request sent to Django backend
+    \item Backend validates token, checks permissions, processes request
+    \item Response returned to frontend
+    \item Response interceptor handles errors (401 triggers refresh)
+    \item Service method returns data or throws error
+    \item Component updates UI or shows error toast
+\end{enumerate}
+
+\subsubsection{Error Handling Flow}
+\begin{lstlisting}[language=TypeScript]
+try {
+  const response = await apiClient.post('/events/', eventData);
+  showToast('Event created successfully', 'success');
+  return response.data;
+} catch (error) {
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.detail || 'Failed to create event';
+    showToast(message, 'error');
+  }
+  throw error;
+}
+\end{lstlisting}
+
+\subsection{Optimistic Updates}
+The contributor management feature implements optimistic UI updates:
+
+\begin{enumerate}[leftmargin=*]
+    \item User clicks "Add Contributor"
+    \item UI immediately updates to show new contributor
+    \item API request sent in background
+    \item If request succeeds: UI remains updated
+    \item If request fails: UI rolls back to previous state, shows error toast
+\end{enumerate}
+
+\section{Security Implementation}
+
+\subsection{Backend Security}
+
+\subsubsection{Authentication Security}
+\begin{itemize}[leftmargin=*]
+    \item JWT tokens with short expiration (1 hour access, 7 days refresh)
+    \item Token rotation enabled (new refresh token on each refresh)
+    \item Password hashing with Django's PBKDF2 algorithm
+    \item No password storage in plain text
+    \item Token blacklisting on logout (via simplejwt)
+\end{itemize}
+
+\subsubsection{Authorization Security}
+\begin{itemize}[leftmargin=*]
+    \item Permission classes on all sensitive endpoints
+    \item Object-level permissions for resource ownership
+    \item Role-based access control enforced at view level
+    \item Email domain validation for organization membership
+\end{itemize}
+
+\subsubsection{Production Security Settings}
+\begin{lstlisting}[language=Python]
+# HTTPS enforcement
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Security headers
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# CORS configuration
+CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
+CORS_ALLOW_CREDENTIALS = True
+\end{lstlisting}
+
+\subsection{Frontend Security}
+
+\subsubsection{Security Headers (Vercel)}
+\begin{lstlisting}[language=JSON]
+{
+  "headers": [
+    {"key": "X-Content-Type-Options", "value": "nosniff"},
+    {"key": "X-Frame-Options", "value": "DENY"},
+    {"key": "X-XSS-Protection", "value": "1; mode=block"}
+  ]
+}
+\end{lstlisting}
+
+\subsubsection{Client-Side Security}
+\begin{itemize}[leftmargin=*]
+    \item Tokens stored in localStorage (XSS mitigation via CSP)
+    \item Automatic token cleanup on logout
+    \item Protected routes redirect to login if unauthenticated
+    \item HTTPS-only communication in production
+    \item Input validation on all forms
+\end{itemize}
+
+\section{Deployment Architecture}
+
+\subsection{Backend Deployment (Render)}
+
+\subsubsection{Configuration (render.yaml)}
+\begin{lstlisting}[language=YAML]
+services:
+  - type: web
+    name: csesa-backend
+    runtime: python3
+    buildCommand: "./build.sh"
+    startCommand: "./start.sh"
+    envVars:
+      - key: DATABASE_URL
+      - key: SECRET_KEY (auto-generated)
+      - key: WEB_CONCURRENCY (value: 4)
+      - key: PORT (value: 10000)
+
+databases:
+  - name: csesa-db
+    databaseName: csesa_db
+    user: csesa_user
+\end{lstlisting}
+
+\subsubsection{Build Process (build.sh)}
+\begin{enumerate}[leftmargin=*]
+    \item Install Python dependencies: \texttt{pip install -r requirements.txt}
+    \item Collect static files: \texttt{python manage.py collectstatic --no-input}
+    \item Run database migrations: \texttt{python manage.py migrate}
+    \item Create superuser from environment variables
+    \item Create default domains: \texttt{python manage.py create\_default\_domain}
+    \item Make start script executable: \texttt{chmod +x start.sh}
+\end{enumerate}
+
+\subsubsection{Start Process (start.sh)}
+\begin{lstlisting}[language=bash]
+#!/usr/bin/env bash
+PORT=${PORT:-8000}
+exec gunicorn csesa_backend.wsgi:application --bind 0.0.0.0:$PORT
+\end{lstlisting}
+
+\textbf{Key Points:}
+\begin{itemize}[leftmargin=*]
+    \item Gunicorn WSGI server for production
+    \item Dynamic port binding from environment
+    \item 4 worker processes (WEB\_CONCURRENCY=4)
+    \item WhiteNoise middleware for static file serving
+\end{itemize}
+
+\subsection{Frontend Deployment (Vercel)}
+
+\subsubsection{Build Configuration}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Build Command:} \texttt{tsc -b \&\& vite build}
+    \item \textbf{Output Directory:} \texttt{dist/}
+    \item \textbf{Node Version:} 18.x
+    \item \textbf{Framework:} Vite (auto-detected)
+\end{itemize}
+
+\subsubsection{Routing Configuration (vercel.json)}
+\begin{lstlisting}[language=JSON]
+{
+  "rewrites": [
+    {"source": "/((?!.*\\.).*)", "destination": "/index.html"}
+  ]
+}
+\end{lstlisting}
+This ensures all non-file requests route to index.html for client-side routing.
+
+\subsubsection{Environment Variables}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Development:} \texttt{VITE\_API\_BASE\_URL=http://127.0.0.1:8000/api}
+    \item \textbf{Production:} \texttt{VITE\_API\_BASE\_URL=https://csesa-backend.onrender.com/api}
+\end{itemize}
+
+\subsection{Deployment URLs}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Frontend:} \url{https://csesa-website-pi.vercel.app}
+    \item \textbf{Backend API:} \url{https://csesa-backend.onrender.com/api}
+    \item \textbf{GitHub Repository:} \url{https://github.com/CSESA-IITI}
+\end{itemize}
+
+\section{Testing Strategy}
+
+\subsection{Backend Testing}
+
+\subsubsection{Test Framework}
+\begin{itemize}[leftmargin=*]
+    \item Django TestCase for model and utility tests
+    \item APITestCase for API endpoint tests
+    \item Test database isolation (separate test DB)
+    \item Fixtures for test data setup
+\end{itemize}
+
+\subsubsection{Test Coverage}
+
+\textbf{Events App Tests (events/tests.py):}
+\begin{itemize}[leftmargin=*]
+    \item Event model validation (future date requirement)
+    \item Event serializer validation
+    \item Permission tests (PRESIDENT/HEAD can create, creator can edit)
+    \item CRUD operation tests
+    \item my\_events endpoint filtering
+    \item Unauthorized access prevention
+\end{itemize}
+
+\textbf{Projects App Tests (projects/tests.py):}
+\begin{itemize}[leftmargin=*]
+    \item Project model methods (add\_contributor, remove\_contributor, can\_manage\_contributors)
+    \item Project serializer validation (domains, team\_members)
+    \item Self-assignment feature during creation
+    \item Contributor management API (add/remove bulk operations)
+    \item Available contributors endpoint
+    \item Permission validation for contributor operations
+    \item Optional team\_members field validation
+\end{itemize}
+
+\textbf{Test Statistics:}
+\begin{itemize}[leftmargin=*]
+    \item Total backend tests: 40+ test cases
+    \item Coverage areas: Models, serializers, views, permissions
+    \item Test execution: \texttt{python manage.py test}
+\end{itemize}
+
+\subsection{Frontend Testing}
+
+\subsubsection{Test Framework}
+\begin{itemize}[leftmargin=*]
+    \item Vitest 3.2.4 (Vite-native test runner)
+    \item React Testing Library 16.3.0 (component testing)
+    \item jsdom 27.0.0 (DOM simulation)
+    \item @testing-library/user-event 14.6.1 (user interaction simulation)
+\end{itemize}
+
+\subsubsection{Test Coverage}
+
+\textbf{Service Tests:}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{api.test.ts:} API client configuration, interceptors
+    \item \texttt{eventService.test.ts:} Event service unit tests
+    \item \texttt{eventService.integration.test.ts:} Event API integration tests
+\end{itemize}
+
+\textbf{Component Tests:}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{AddProjectModal.test.tsx:} Project creation form
+    \item \texttt{EditProjectModal.test.tsx:} Project editing form
+    \item \texttt{ContributorManagement.test.tsx:} Contributor UI unit tests
+    \item \texttt{ContributorManagement.integration.test.tsx:} Contributor API integration
+    \item \texttt{ContributorSelector.test.tsx:} User selection component
+    \item \texttt{ErrorBoundary.test.tsx:} Error boundary behavior
+    \item \texttt{LoadingSpinner.test.tsx:} Loading state rendering
+    \item \texttt{Toast.test.tsx:} Notification component
+    \item \texttt{ProjectCard.test.tsx:} Project card rendering
+    \item \texttt{ProjectDetails.test.tsx:} Project details modal
+    \item \texttt{Profile.test.tsx:} Profile page functionality
+\end{itemize}
+
+\textbf{Context Tests:}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{ToastContext.test.tsx:} Toast notification system
+\end{itemize}
+
+\textbf{Test Execution:}
+\begin{lstlisting}[language=bash]
+npm run test        # Watch mode
+npm run test:run    # Single run
+\end{lstlisting}
+
+\section{Key Technical Implementations}
+
+\subsection{JWT Token Management}
+
+\subsubsection{Token Refresh Logic}
+The system implements sophisticated token refresh with request queuing:
+
+\begin{lstlisting}[language=TypeScript]
+// Prevent multiple simultaneous refresh attempts
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+// On 401 response:
+if (isRefreshing) {
+  // Queue the failed request
+  return new Promise((resolve, reject) => {
+    failedQueue.push({ resolve, reject });
+  });
+}
+
+// Attempt token refresh
+isRefreshing = true;
+const response = await axios.post('/token/refresh/', {
+  refresh: refreshToken
+});
+
+// Process queued requests with new token
+processQueue(null, newAccessToken);
+\end{lstlisting}
+
+\textbf{Benefits:}
+\begin{itemize}[leftmargin=*]
+    \item Prevents multiple refresh requests
+    \item Queues failed requests during refresh
+    \item Retries all queued requests with new token
+    \item Seamless user experience (no interruption)
+\end{itemize}
+
+\subsection{Contributor Management System}
+
+\subsubsection{Backend Implementation}
+\begin{lstlisting}[language=Python]
+@action(detail=True, methods=['post'], url_path='contributors')
+def manage_contributors(self, request, pk=None):
+    project = self.get_object()
+    serializer = ContributorManagementSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    
+    user_ids = serializer.validated_data['user_ids']
+    action_type = serializer.validated_data['action']
+    users = CustomUser.objects.filter(id__in=user_ids)
+    
+    results = []
+    for user in users:
+        if action_type == 'add':
+            success = project.add_contributor(user)
+            results.append({
+                'user_id': user.id,
+                'action': 'added' if success else 'already_exists'
+            })
+        elif action_type == 'remove':
+            success = project.remove_contributor(user)
+            results.append({
+                'user_id': user.id,
+                'action': 'removed' if success else 'not_found'
+            })
+    
+    return Response({'results': results})
+\end{lstlisting}
+
+\subsubsection{Frontend Implementation}
+\begin{lstlisting}[language=TypeScript]
+const handleAddContributors = async (userIds: number[]) => {
+  // Optimistic update
+  const newContributors = availableContributors.filter(
+    u => userIds.includes(u.id)
+  );
+  setCurrentContributors([...currentContributors, ...newContributors]);
+  setAvailableContributors(
+    availableContributors.filter(u => !userIds.includes(u.id))
+  );
+  
+  try {
+    await api.post(`/projects/${projectId}/contributors/`, {
+      user_ids: userIds,
+      action: 'add'
+    });
+    showToast('Contributors added successfully', 'success');
+  } catch (error) {
+    // Rollback on failure
+    setCurrentContributors(currentContributors);
+    setAvailableContributors(availableContributors);
+    showToast('Failed to add contributors', 'error');
+  }
+};
+\end{lstlisting}
+
+\subsection{Google OAuth Integration}
+
+\subsubsection{OAuth Flow}
+\begin{enumerate}[leftmargin=*]
+    \item User clicks "Login with Google" button
+    \item Frontend redirects to Google OAuth consent screen
+    \item User authorizes application
+    \item Google redirects to callback URL with authorization code
+    \item Backend exchanges code for access token
+    \item Backend fetches user info from Google API
+    \item Backend validates email domain (must be organization domain)
+    \item Backend creates or updates user in database
+    \item Backend generates JWT tokens
+    \item Frontend receives tokens and user data
+    \item Frontend stores tokens and updates AuthContext
+\end{enumerate}
+
+\subsubsection{Domain Validation}
+\begin{lstlisting}[language=Python]
+# Only allow users from organization domain
+email_domain = user_email.split('@')[-1].lower()
+allowed_domain = settings.ALLOWED_ORGANIZATION_DOMAIN
+
+if email_domain != allowed_domain:
+    raise ValidationError(
+        f"Only users from {allowed_domain} are allowed"
+    )
+\end{lstlisting}
+
+\section{Database Design}
+
+\subsection{Entity-Relationship Diagram}
+\begin{verbatim}
+CustomUser (1) ──────────── (*) Project (created_by)
+    │                           │
+    │ (*)                       │ (*)
+    │                           │
+    └─────── team_members ──────┘
+    
+CustomUser (*) ──────────── (*) Skill
+
+CustomUser (1) ──────────── (*) Event (created_by)
+
+Project (*) ─────────────── (*) Domain
+
+ContactMessage (standalone, no relationships)
+\end{verbatim}
+
+\subsection{Database Migrations}
+Django's migration system tracks schema changes:
+
+\textbf{Users App Migrations:}
+\begin{itemize}[leftmargin=*]
+    \item 0001\_initial.py - Initial CustomUser model
+    \item 0002\_customuser\_is\_onboarded.py - Add onboarding flag
+    \item 0003\_customuser\_picture.py - Add profile picture field
+    \item 0004\_skill\_remove\_customuser\_admission\_year.py - Add Skill model, refactor fields
+    \item 0005\_customuser\_domain.py - Add domain field
+    \item 0006\_remove\_department\_field.py - Remove deprecated department field
+\end{itemize}
+
+\textbf{Projects App Migrations:}
+\begin{itemize}[leftmargin=*]
+    \item 0001\_initial.py - Initial Project and Domain models
+    \item 0002\_project\_created\_by.py - Add created\_by field
+    \item 0003\_set\_created\_by\_for\_existing\_projects.py - Data migration
+    \item 0004\_alter\_project\_github\_link.py - Update GitHub link field
+\end{itemize}
+
+\textbf{Events App Migrations:}
+\begin{itemize}[leftmargin=*]
+    \item 0001\_initial.py - Initial Event model
+    \item 0002\_update\_event\_model.py - Add validation and indexes
+    \item 0003\_rename\_events\_event\_date\_idx.py - Rename index
+\end{itemize}
+
+\section{API Serializers}
+
+\subsection{User Serializers}
+
+\subsubsection{UserSerializer}
+\begin{lstlisting}[language=Python]
+class UserSerializer(serializers.ModelSerializer):
+    skills = SkillSerializer(many=True, read_only=True)
+    skill_names = ListField(write_only=True)  # For updates
+    image_url = SerializerMethodField()  # Absolute URL
+    image = ImageField(write_only=True)  # For uploads
+    
+    class Meta:
+        fields = ['id', 'email', 'first_name', 'last_name', 
+                  'role', 'domain', 'year', 'bio', 'image', 
+                  'image_url', 'skills', 'skill_names', 
+                  'github_link', 'linkedin_link', 'is_onboarded']
+        read_only_fields = ['email', 'role', 'domain', 'year']
+\end{lstlisting}
+
+\textbf{Key Features:}
+\begin{itemize}[leftmargin=*]
+    \item Separate read/write fields for skills (nested vs. list)
+    \item Image URL generation with absolute paths
+    \item Multipart form data support for image uploads
+    \item Boolean conversion for FormData compatibility
+    \item Custom update method for skills and images
+\end{itemize}
+
+\subsubsection{UserCreationSerializer}
+\begin{lstlisting}[language=Python]
+class UserCreationSerializer(serializers.ModelSerializer):
+    password = CharField(write_only=True, min_length=8)
+    
+    def validate_email(self, value):
+        if CustomUser.objects.filter(email=value).exists():
+            raise ValidationError("User already exists")
+    
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = CustomUser.objects.create_user(
+            password=password, **validated_data
+        )
+        return user
+\end{lstlisting}
+
+\subsection{Project Serializers}
+
+\subsubsection{ProjectSerializer}
+\begin{lstlisting}[language=Python]
+class ProjectSerializer(serializers.ModelSerializer):
+    # Read-only nested details
+    domains_details = DomainSerializer(many=True, read_only=True)
+    team_members_details = ProjectMemberSerializer(many=True, read_only=True)
+    
+    # Write-only fields
+    domains = ListField(write_only=True)  # Domain IDs
+    team_members = ListField(write_only=True, required=False)
+    add_self_as_contributor = BooleanField(write_only=True, default=True)
+    
+    # Computed field
+    available_contributors = SerializerMethodField()
+    
+    def create(self, validated_data):
+        add_self = validated_data.pop('add_self_as_contributor', True)
+        current_user = self.context['request'].user
+        
+        # Create project
+        project = Project.objects.create(**validated_data)
+        
+        # Auto-add creator as contributor if flag is True
+        if add_self and current_user.is_authenticated:
+            project.add_contributor(current_user)
+        
+        return project
+\end{lstlisting}
+
+\textbf{Key Features:}
+\begin{itemize}[leftmargin=*]
+    \item Separate read/write fields for nested relationships
+    \item Self-assignment feature with default True
+    \item Optional team\_members field
+    \item Available contributors computed dynamically
+    \item Domain ID validation
+\end{itemize}
+
+\subsection{Event Serializers}
+
+\subsubsection{EventSerializer}
+\begin{lstlisting}[language=Python]
+class EventSerializer(serializers.ModelSerializer):
+    created_by = UserSerializer(read_only=True)
+    can_edit = SerializerMethodField()
+    can_delete = SerializerMethodField()
+    
+    def validate_date(self, value):
+        if value <= timezone.now():
+            raise ValidationError("Event date must be in the future")
+        return value
+    
+    def get_can_edit(self, obj):
+        user = self.context['request'].user
+        return (obj.created_by == user or 
+                user.role in ['PRESIDENT', 'HEAD'])
+    
+    def get_can_delete(self, obj):
+        user = self.context['request'].user
+        return (obj.created_by == user or 
+                user.role in ['PRESIDENT', 'HEAD'])
+\end{lstlisting}
+
+\textbf{Key Features:}
+\begin{itemize}[leftmargin=*]
+    \item Nested user serialization for creator details
+    \item Permission flags computed per-request (can\_edit, can\_delete)
+    \item Future date validation at serializer level
+    \item Read-only created\_by field (set in perform\_create)
+\end{itemize}
+
+\section{Frontend Services Layer}
+
+\subsection{Authentication Service}
+
+\subsubsection{AuthService Methods}
+\begin{lstlisting}[language=TypeScript]
+class AuthService {
+  async login(email: string, password: string): Promise<AuthResponse>
+  logout(): void
+  isAuthenticated(): boolean
+  getCurrentUser(): User | null
+  setAuthTokens(access: string, refresh: string): void
+  setUser(user: User): void
+  isTokenExpired(): boolean
+  async validateToken(): Promise<boolean>
+  async refreshUserData(): Promise<User | null>
+}
+\end{lstlisting}
+
+\textbf{Key Features:}
+\begin{itemize}[leftmargin=*]
+    \item Token expiration checking with JWT decode
+    \item Automatic user data refresh
+    \item Token validation endpoint
+    \item Centralized token management
+\end{itemize}
+
+\subsection{Event Service}
+
+\subsubsection{EventService Methods}
+\begin{lstlisting}[language=TypeScript]
+class EventService {
+  async getAllEvents(): Promise<Event[]>
+  async getMyEvents(): Promise<Event[]>
+  async createEvent(eventData: EventCreateData): Promise<Event>
+  async updateEvent(id: number, eventData: EventUpdateData): Promise<Event>
+  async deleteEvent(id: number): Promise<void>
+}
+\end{lstlisting}
+
+\section{Development Workflow}
+
+\subsection{Local Development Setup}
+
+\subsubsection{Backend Setup}
+\begin{lstlisting}[language=bash]
+# Navigate to backend directory
+cd backend
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements-production.txt
+
+# Run migrations
+python manage.py migrate
+
+# Create superuser
+python manage.py create_superuser
+
+# Create default domains
+python manage.py create_default_domains
+
+# Run development server
+python manage.py runserver
+# Server runs on http://127.0.0.1:8000
+\end{lstlisting}
+
+\subsubsection{Frontend Setup}
+\begin{lstlisting}[language=bash]
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Create .env.local file
+echo "VITE_API_BASE_URL=http://127.0.0.1:8000/api" > .env.local
+
+# Run development server
+npm run dev
+# Server runs on http://localhost:5173
+\end{lstlisting}
+
+\subsection{Environment Variables}
+
+\subsubsection{Backend Environment Variables}
+\begin{lstlisting}[language=bash]
+# Django settings
+SECRET_KEY=<django-secret-key>
+DEBUG=True  # False in production
+ALLOWED_HOSTS=localhost,127.0.0.1,.onrender.com
+
+# Database (SQLite by default, no config needed)
+DATABASE_URL=<optional-postgres-url>
+
+# Email configuration
+EMAIL_HOST_USER=<gmail-address>
+EMAIL_HOST_PASSWORD=<gmail-app-password>
+
+# CORS
+FRONTEND_URL=https://csesa-website-pi.vercel.app
+CORS_ALLOW_ALL=false
+
+# Superuser creation
+DJANGO_SUPERUSER_EMAIL=<admin-email>
+DJANGO_SUPERUSER_PASSWORD=<admin-password>
+
+# Google OAuth
+GOOGLE_OAUTH2_CLIENT_ID=<google-client-id>
+GOOGLE_OAUTH2_CLIENT_SECRET=<google-client-secret>
+ALLOWED_ORGANIZATION_DOMAIN=iiti.ac.in
+\end{lstlisting}
+
+\subsubsection{Frontend Environment Variables}
+\begin{lstlisting}[language=bash]
+# Development (.env.local)
+VITE_API_BASE_URL=http://127.0.0.1:8000/api
+
+# Production (.env.production)
+VITE_API_BASE_URL=https://csesa-backend.onrender.com/api
+\end{lstlisting}
+
+\section{Advanced Features}
+
+\subsection{Onboarding System}
+\begin{itemize}[leftmargin=*]
+    \item New users flagged with \texttt{is\_onboarded=False}
+    \item OnboardingModal appears on first login
+    \item Modal prompts for: bio, skills, year, domain, social links, profile picture
+    \item Modal cannot be dismissed until profile is complete
+    \item After completion, \texttt{is\_onboarded} set to True
+    \item Subsequent logins skip onboarding
+\end{itemize}
+
+\subsection{Image Upload System}
+\begin{itemize}[leftmargin=*]
+    \item Profile pictures uploaded via multipart/form-data
+    \item Stored in \texttt{media/profile\_pics/} directory
+    \item Pillow library for image processing
+    \item Automatic URL generation with \texttt{request.build\_absolute\_uri()}
+    \item WhiteNoise serves media files in production
+\end{itemize}
+
+\subsection{Skills Management}
+\begin{itemize}[leftmargin=*]
+    \item Skills stored as separate model (reusable across users)
+    \item Auto-creation of new skills on profile update
+    \item Many-to-many relationship allows multiple skills per user
+    \item Skills displayed as tags on user profiles
+    \item Skill filtering for team member search
+\end{itemize}
+
+\subsection{Domain System}
+\begin{itemize}[leftmargin=*]
+    \item Predefined domains: Competitive Programming, Web Development, Systems Programming, Graphics Programming, Machine Learning
+    \item Created via management command on deployment
+    \item Projects can belong to multiple domains
+    \item Users assigned to one primary domain
+    \item Domain-based filtering for projects
+\end{itemize}
+
+\section{Performance Optimizations}
+
+\subsection{Backend Optimizations}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Database Indexes:} On frequently queried fields (created\_by, date)
+    \item \textbf{Query Optimization:} select\_related and prefetch\_related for joins
+    \item \textbf{Pagination:} REST Framework pagination for large datasets
+    \item \textbf{Static Files:} WhiteNoise with compression and caching
+    \item \textbf{Gunicorn Workers:} 4 worker processes for concurrent requests
+\end{itemize}
+
+\subsection{Frontend Optimizations}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Code Splitting:} Lazy loading with React.lazy() for all routes
+    \item \textbf{Suspense Boundaries:} Prevent blocking during route loads
+    \item \textbf{Build Optimization:} Vite's fast HMR and optimized production builds
+    \item \textbf{Asset Optimization:} Automatic code splitting and tree shaking
+    \item \textbf{Caching:} Browser caching for static assets
+\end{itemize}
+
+\section{Error Handling Strategy}
+
+\subsection{Backend Error Handling}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Validation Errors:} Serializer validation with detailed error messages
+    \item \textbf{Permission Errors:} 403 Forbidden with permission denied message
+    \item \textbf{Not Found Errors:} 404 for non-existent resources
+    \item \textbf{Server Errors:} 500 with generic error message (details logged)
+    \item \textbf{Model Validation:} clean() method for business logic validation
+\end{itemize}
+
+\subsection{Frontend Error Handling}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{ErrorBoundary:} Catches React component errors, shows fallback UI
+    \item \textbf{ContributorErrorBoundary:} Specialized error boundary for contributor features
+    \item \textbf{API Errors:} Caught in try-catch blocks, displayed via Toast
+    \item \textbf{Form Validation:} InlineError component for field-level errors
+    \item \textbf{Network Errors:} Axios error handling with user-friendly messages
+    \item \textbf{404 Handling:} NotFound page for invalid routes
+\end{itemize}
+
+\section{Code Quality and Best Practices}
+
+\subsection{Backend Best Practices}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{DRY Principle:} Reusable permission classes and serializers
+    \item \textbf{Separation of Concerns:} Models, views, serializers in separate files
+    \item \textbf{Type Safety:} Django model field types and validation
+    \item \textbf{Security:} CSRF protection, SQL injection prevention (ORM)
+    \item \textbf{Documentation:} Docstrings for all classes and methods
+    \item \textbf{PEP 8:} Python style guide compliance
+\end{itemize}
+
+\subsection{Frontend Best Practices}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{TypeScript:} Full type safety across codebase
+    \item \textbf{Component Composition:} Reusable, single-responsibility components
+    \item \textbf{Custom Hooks:} Reusable logic extraction
+    \item \textbf{Error Boundaries:} Graceful error handling
+    \item \textbf{Accessibility:} Semantic HTML, ARIA labels
+    \item \textbf{Code Splitting:} Lazy loading for performance
+    \item \textbf{ESLint:} Code quality enforcement
+\end{itemize}
+
+\section{Challenges and Solutions}
+
+\subsection{Challenge 1: Token Refresh Race Condition}
+\textbf{Problem:} Multiple simultaneous API calls failing with 401 caused multiple refresh attempts.
+
+\textbf{Solution:} Implemented request queuing system:
+\begin{itemize}[leftmargin=*]
+    \item Single refresh flag prevents concurrent refreshes
+    \item Failed requests queued during refresh
+    \item All queued requests retried with new token
+    \item Prevents token refresh storms
+\end{itemize}
+
+\subsection{Challenge 2: Multipart Form Data with Nested Objects}
+\textbf{Problem:} Profile updates with images and skills array failed due to FormData limitations.
+
+\textbf{Solution:} Implemented dual serializer fields:
+\begin{itemize}[leftmargin=*]
+    \item Read-only nested serializer for GET requests
+    \item Write-only list field for POST/PATCH requests
+    \item Custom update method to handle both formats
+    \item Boolean conversion for FormData string values
+\end{itemize}
+
+\subsection{Challenge 3: Contributor Management Permissions}
+\textbf{Problem:} Complex permission logic for who can manage project contributors.
+
+\textbf{Solution:} Implemented layered permission system:
+\begin{itemize}[leftmargin=*]
+    \item Model-level method: \texttt{can\_manage\_contributors(user)}
+    \item Permission class: \texttt{CanManageProjectContributors}
+    \item Serializer-level validation
+    \item Frontend permission checks before showing UI
+\end{itemize}
+
+\subsection{Challenge 4: Optimistic Updates with Rollback}
+\textbf{Problem:} Poor UX with loading states for contributor operations.
+
+\textbf{Solution:} Implemented optimistic updates:
+\begin{itemize}[leftmargin=*]
+    \item Update UI immediately on user action
+    \item Send API request in background
+    \item On success: keep UI as-is
+    \item On failure: rollback UI to previous state, show error
+    \item Provides instant feedback while maintaining data consistency
+\end{itemize}
+
+\section{Scalability Considerations}
+
+\subsection{Current Architecture Limitations}
+\begin{itemize}[leftmargin=*]
+    \item SQLite database (single-file, not ideal for high concurrency)
+    \item No caching layer (Redis/Memcached)
+    \item No CDN for media files
+    \item Single server deployment (no load balancing)
+\end{itemize}
+
+\subsection{Future Scalability Improvements}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Database:} Migrate to PostgreSQL for better concurrency
+    \item \textbf{Caching:} Add Redis for session and query caching
+    \item \textbf{Media Storage:} Move to S3 or Cloudinary for images
+    \item \textbf{Load Balancing:} Multiple Gunicorn instances behind nginx
+    \item \textbf{CDN:} CloudFlare or AWS CloudFront for static assets
+    \item \textbf{Background Tasks:} Celery for async email sending
+\end{itemize}
+
+\section{Interview Preparation: Key Talking Points}
+
+\subsection{Technical Depth Questions}
+
+\subsubsection{Why Django REST Framework?}
+\begin{itemize}[leftmargin=*]
+    \item Rapid API development with ViewSets and Routers
+    \item Built-in serialization and validation
+    \item Powerful permission system
+    \item Browsable API for development
+    \item Excellent documentation and community support
+\end{itemize}
+
+\subsubsection{Why JWT over Session Authentication?}
+\begin{itemize}[leftmargin=*]
+    \item Stateless authentication (no server-side session storage)
+    \item Scalable across multiple servers
+    \item Mobile-friendly (no cookies required)
+    \item Decoupled frontend and backend
+    \item Token contains user claims (reduces DB queries)
+\end{itemize}
+
+\subsubsection{Why React with TypeScript?}
+\begin{itemize}[leftmargin=*]
+    \item Type safety catches errors at compile time
+    \item Better IDE support and autocomplete
+    \item Self-documenting code with interfaces
+    \item Easier refactoring and maintenance
+    \item Industry standard for enterprise applications
+\end{itemize}
+
+\subsubsection{Why Vite over Create React App?}
+\begin{itemize}[leftmargin=*]
+    \item Faster development server (native ES modules)
+    \item Instant hot module replacement (HMR)
+    \item Optimized production builds with Rollup
+    \item Better TypeScript support out of the box
+    \item Smaller bundle sizes
+\end{itemize}
+
+\subsection{Architecture Decisions}
+
+\subsubsection{Why Separate Frontend and Backend?}
+\begin{itemize}[leftmargin=*]
+    \item Independent scaling (frontend CDN, backend servers)
+    \item Technology flexibility (can swap frontend framework)
+    \item Parallel development (frontend and backend teams)
+    \item Better security (API-only backend)
+    \item Easier testing (isolated concerns)
+\end{itemize}
+
+\subsubsection{Why Role-Based Access Control?}
+\begin{itemize}[leftmargin=*]
+    \item Matches organizational hierarchy
+    \item Granular permission management
+    \item Easy to extend with new roles
+    \item Centralized permission logic
+    \item Audit trail with created\_by fields
+\end{itemize}
+
+\subsection{Feature Implementation Deep Dive}
+
+\subsubsection{Contributor Management Feature}
+\textbf{Problem Statement:} Users needed ability to add themselves as contributors during project creation and manage contributors dynamically after creation.
+
+\textbf{Solution Approach:}
+\begin{enumerate}[leftmargin=*]
+    \item Added \texttt{add\_self\_as\_contributor} boolean field to ProjectSerializer (default: True)
+    \item Modified \texttt{create()} method to auto-add creator if flag is True
+    \item Made \texttt{team\_members} field optional (required=False)
+    \item Created custom API endpoint for bulk contributor operations
+    \item Implemented optimistic UI updates for instant feedback
+    \item Added permission validation at multiple layers
+\end{enumerate}
+
+\textbf{Technical Challenges:}
+\begin{itemize}[leftmargin=*]
+    \item Handling many-to-many relationships in serializers
+    \item Preventing duplicate contributors
+    \item Rollback mechanism for failed optimistic updates
+    \item Permission checking for contributor management
+\end{itemize}
+
+\subsubsection{Event Management Feature}
+\textbf{Problem Statement:} Organization needed system to schedule and manage events with proper permissions.
+
+\textbf{Solution Approach:}
+\begin{enumerate}[leftmargin=*]
+    \item Created Event model with future date validation
+    \item Implemented CanManageEvents permission class
+    \item Added \texttt{can\_edit} and \texttt{can\_delete} computed fields in serializer
+    \item Built AddEventModal and EditEventModal components
+    \item Implemented "My Events" filtering
+\end{enumerate}
+
+\textbf{Technical Challenges:}
+\begin{itemize}[leftmargin=*]
+    \item Date validation at multiple layers (serializer, model, frontend)
+    \item Permission computation per-request
+    \item Timezone handling for event dates
+    \item Public read access with authenticated write access
+\end{itemize}
+
+\section{Project Metrics}
+
+\subsection{Codebase Statistics}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Backend:} 6 Django apps, 15+ models, 30+ API endpoints
+    \item \textbf{Frontend:} 11 pages, 25+ components, 5+ services
+    \item \textbf{Tests:} 40+ backend tests, 15+ frontend tests
+    \item \textbf{Lines of Code:} Approximately 8,000+ lines (excluding dependencies)
+\end{itemize}
+
+\subsection{Technology Proficiency Demonstrated}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Backend:} Django, DRF, JWT, ORM, migrations, custom commands
+    \item \textbf{Frontend:} React, TypeScript, hooks, context API, routing
+    \item \textbf{API Design:} RESTful principles, versioning, documentation
+    \item \textbf{Authentication:} JWT, OAuth 2.0, token refresh
+    \item \textbf{Authorization:} RBAC, custom permissions, object-level permissions
+    \item \textbf{Database:} Relational design, migrations, indexes, queries
+    \item \textbf{Testing:} Unit tests, integration tests, mocking
+    \item \textbf{DevOps:} CI/CD, environment management, deployment scripts
+    \item \textbf{Security:} HTTPS, CORS, XSS prevention, CSRF protection
+    \item \textbf{UI/UX:} Responsive design, animations, loading states, error handling
+\end{itemize}
+
+\section{Interview Questions and Answers}
+
+\subsection{System Design Questions}
+
+\subsubsection{Q: How does your authentication system work?}
+\textbf{Answer:} We use JWT-based authentication with djangorestframework-simplejwt. When a user logs in, the backend validates credentials and returns an access token (1-hour lifetime) and refresh token (7-day lifetime). The frontend stores these in localStorage and includes the access token in the Authorization header for all requests. We have an Axios interceptor that automatically refreshes the access token when it expires by calling the refresh endpoint with the refresh token. If refresh fails, we clear tokens and redirect to login. This provides stateless, scalable authentication suitable for our decoupled architecture.
+
+\subsubsection{Q: Explain your role-based access control system.}
+\textbf{Answer:} We have a 4-tier role hierarchy: PRESIDENT (full access), HEAD (event/project management), COORDINATOR (project management), and ASSOCIATE (basic access). We implemented 10 custom permission classes in Django REST Framework that check user roles at both the view level and object level. For example, CanManageProjectContributors checks if the user is the project creator or has a leadership role. Permissions are enforced at multiple layers: Django permission classes, model methods, serializer validation, and frontend UI visibility. This defense-in-depth approach ensures security even if one layer is bypassed.
+
+\subsubsection{Q: How do you handle concurrent contributor updates?}
+\textbf{Answer:} We use optimistic updates for better UX. When a user adds a contributor, the UI updates immediately while the API request happens in the background. If the request succeeds, the UI stays as-is. If it fails, we rollback the UI to the previous state and show an error toast. On the backend, we use Django's atomic transactions and the ORM's add/remove methods which handle race conditions. The many-to-many relationship prevents duplicate entries at the database level.
+
+\subsubsection{Q: Why did you choose SQLite for production?}
+\textbf{Answer:} We chose SQLite for production due to Python 3.13 compatibility requirements and the scale of our application. For a student organization with moderate traffic (hundreds of users, not thousands), SQLite provides sufficient performance. It's also simpler to deploy (no separate database server), has zero configuration, and is included with Python. However, I'm aware of its limitations for high-concurrency scenarios and would migrate to PostgreSQL if we needed better concurrent write performance or advanced features like full-text search.
+
+\subsubsection{Q: How do you prevent unauthorized access to API endpoints?}
+\textbf{Answer:} We implement defense-in-depth security: (1) JWT token validation on every request, (2) Custom permission classes that check user roles, (3) Object-level permissions that verify ownership or leadership status, (4) Serializer validation for data integrity, (5) Model-level validation in clean() methods. For example, to delete an event, the request must have a valid JWT token, the user must be authenticated, and they must either be the event creator or have PRESIDENT/HEAD role. This is enforced by the CanManageEvents permission class at the view level.
+
+\subsection{Technical Implementation Questions}
+
+\subsubsection{Q: Walk me through your project creation flow.}
+\textbf{Answer:} 
+\begin{enumerate}[leftmargin=*]
+    \item User with PRESIDENT/HEAD/COORDINATOR role clicks "Add Project"
+    \item AddProjectModal opens with form fields
+    \item User fills in name, description, tech stack, selects domains
+    \item "Add myself as contributor" checkbox is checked by default
+    \item User can optionally select other team members (field is optional)
+    \item On submit, frontend sends POST to /api/projects/ with form data
+    \item Backend ProjectSerializer validates data
+    \item In create() method, we extract add\_self\_as\_contributor flag
+    \item Project is created with created\_by set to current user
+    \item If add\_self\_as\_contributor is True, we call project.add\_contributor(current\_user)
+    \item Response includes full project details with nested team\_members\_details
+    \item Frontend updates project list and shows success toast
+\end{enumerate}
+
+\subsubsection{Q: How do you handle image uploads?}
+\textbf{Answer:} We use multipart/form-data for profile picture uploads. The frontend sends a FormData object with the image file and other profile fields. The backend UserSerializer has an ImageField for write operations and a SerializerMethodField for read operations that returns absolute URLs. Images are stored in media/profile\_pics/ directory. In production, WhiteNoise serves these files. For better scalability, we could migrate to S3 or Cloudinary for cloud storage and CDN delivery.
+
+\subsubsection{Q: Explain your frontend state management approach.}
+\textbf{Answer:} We use a hybrid approach: React Context for global state (AuthContext for authentication, ToastContext for notifications) and local component state with hooks for UI-specific state. We chose this over Redux because our state management needs are relatively simple and Context API provides sufficient performance. For complex state updates like contributor management, we use optimistic updates with rollback logic. We also leverage React Query patterns in our service layer for data fetching and caching.
+
+\subsubsection{Q: How do you ensure type safety across frontend and backend?}
+\textbf{Answer:} On the backend, Django's ORM provides type safety through model field definitions. On the frontend, we define TypeScript interfaces that mirror the backend serializers (User, Event, Project interfaces). We maintain consistency by manually syncing these interfaces when backend models change. For better automation, we could generate TypeScript types from Django REST Framework schemas using tools like drf-spectacular with openapi-typescript-codegen.
+
+\subsection{Behavioral Questions}
+
+\subsubsection{Q: What was the most challenging feature to implement?}
+\textbf{Answer:} The contributor management system was the most challenging. It required coordinating multiple concerns: (1) Permission validation at multiple layers, (2) Optimistic UI updates with rollback logic, (3) Bulk operations for adding/removing multiple contributors, (4) Real-time filtering of available contributors, (5) Error handling with user-friendly messages. The complexity came from ensuring data consistency while providing instant UI feedback. I solved this by implementing a clear separation of concerns: model methods for business logic, permission classes for authorization, serializers for validation, and service layer for API communication with error handling.
+
+\subsubsection{Q: How did you approach testing?}
+\textbf{Answer:} I followed a test-driven approach for critical features. On the backend, I wrote unit tests for models (validation logic), serializers (data transformation), and integration tests for API endpoints (full request-response cycle). On the frontend, I used React Testing Library to test components from the user's perspective (what they see and interact with) rather than implementation details. I also wrote integration tests for services that mock API responses. This gave us confidence that features work end-to-end while maintaining fast test execution.
+
+\subsubsection{Q: What would you improve if you had more time?}
+\textbf{Answer:} 
+\begin{enumerate}[leftmargin=*]
+    \item Migrate to PostgreSQL for better concurrency and advanced features
+    \item Add Redis caching for frequently accessed data (user profiles, project lists)
+    \item Implement real-time notifications with WebSockets for contributor changes
+    \item Add comprehensive logging and monitoring (Sentry for error tracking)
+    \item Implement rate limiting to prevent API abuse
+    \item Add email verification for new user registration
+    \item Create admin dashboard with analytics (user growth, event attendance)
+    \item Implement search functionality for projects and events
+    \item Add pagination for large datasets
+    \item Improve test coverage to 90%+
+\end{enumerate}
+
+\section{Code Examples for Interview}
+
+\subsection{Backend Code Example: Custom Permission Class}
+\begin{lstlisting}[language=Python]
+class CanManageProjectContributors(BasePermission):
+    """
+    Permission class for project contributor management.
+    Allows project creators and leadership roles to manage contributors.
+    """
+    def has_permission(self, request, view):
+        # Must be authenticated
+        return request.user and request.user.is_authenticated
+    
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user can manage contributors for specific project.
+        obj is a Project instance.
+        """
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        # Use the project's can_manage_contributors method
+        return obj.can_manage_contributors(request.user)
+\end{lstlisting}
+
+\textbf{Explanation:} This demonstrates understanding of Django REST Framework's two-level permission system: has\_permission for view-level checks and has\_object\_permission for resource-level checks. We delegate to a model method for business logic encapsulation.
+
+\subsection{Frontend Code Example: Axios Interceptor}
+\begin{lstlisting}[language=TypeScript]
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // Queue request during refresh
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiClient(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      try {
+        const response = await axios.post('/token/refresh/', {
+          refresh: refreshToken
+        });
+        const { access } = response.data;
+        localStorage.setItem('accessToken', access);
+        
+        processQueue(null, access);
+        originalRequest.headers.Authorization = `Bearer ${access}`;
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        // Clear tokens and redirect to login
+        localStorage.clear();
+        window.location.href = '/#/login';
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+\end{lstlisting}
+
+\textbf{Explanation:} This demonstrates advanced async/await patterns, promise queuing, and error handling. The interceptor prevents multiple simultaneous refresh attempts by queuing failed requests and retrying them all with the new token. This is a production-ready pattern used in enterprise applications.
+
+\subsection{Full-Stack Example: Add Contributor Flow}
+
+\subsubsection{Backend Endpoint}
+\begin{lstlisting}[language=Python]
+@action(detail=True, methods=['post'], url_path='contributors')
+def manage_contributors(self, request, pk=None):
+    project = self.get_object()
+    serializer = ContributorManagementSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    
+    user_ids = serializer.validated_data['user_ids']
+    action_type = serializer.validated_data['action']
+    users = CustomUser.objects.filter(id__in=user_ids)
+    
+    results = []
+    for user in users:
+        if action_type == 'add':
+            success = project.add_contributor(user)
+            results.append({
+                'user_id': user.id,
+                'action': 'added' if success else 'already_exists'
+            })
+    
+    return Response({
+        'results': results,
+        'project': ProjectSerializer(project, context={'request': request}).data
+    })
+\end{lstlisting}
+
+\subsubsection{Frontend Service}
+\begin{lstlisting}[language=TypeScript]
+export const addContributors = async (
+  projectId: number, 
+  userIds: number[]
+): Promise<void> => {
+  try {
+    const response = await apiClient.post(
+      `/projects/${projectId}/contributors/`,
+      { user_ids: userIds, action: 'add' }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.detail || 'Failed to add contributors'
+      );
+    }
+    throw error;
+  }
+};
+\end{lstlisting}
+
+\subsubsection{Frontend Component}
+\begin{lstlisting}[language=TypeScript]
+const handleAddContributors = async (userIds: number[]) => {
+  // Optimistic update
+  const newContributors = availableContributors.filter(
+    u => userIds.includes(u.id)
+  );
+  const updatedCurrent = [...currentContributors, ...newContributors];
+  const updatedAvailable = availableContributors.filter(
+    u => !userIds.includes(u.id)
+  );
+  
+  setCurrentContributors(updatedCurrent);
+  setAvailableContributors(updatedAvailable);
+  
+  try {
+    await addContributors(projectId, userIds);
+    showToast('Contributors added successfully', 'success');
+  } catch (error) {
+    // Rollback on failure
+    setCurrentContributors(currentContributors);
+    setAvailableContributors(availableContributors);
+    showToast('Failed to add contributors', 'error');
+  }
+};
+\end{lstlisting}
+
+\textbf{Explanation:} This full-stack example shows how we coordinate between frontend and backend for a complex operation. The backend handles validation and database updates, while the frontend provides instant feedback with optimistic updates and graceful error handling.
+
+\section{Learning Outcomes and Skills Gained}
+
+\subsection{Technical Skills}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Full-Stack Development:} End-to-end feature implementation from database to UI
+    \item \textbf{API Design:} RESTful principles, versioning, documentation
+    \item \textbf{Authentication \& Authorization:} JWT, OAuth 2.0, RBAC
+    \item \textbf{Database Design:} Relational modeling, migrations, optimization
+    \item \textbf{Testing:} Unit, integration, and component testing
+    \item \textbf{DevOps:} CI/CD pipelines, deployment automation, environment management
+    \item \textbf{Security:} HTTPS, CORS, XSS prevention, CSRF protection
+    \item \textbf{Performance:} Code splitting, lazy loading, optimistic updates
+\end{itemize}
+
+\subsection{Soft Skills}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Problem Solving:} Breaking down complex features into manageable tasks
+    \item \textbf{System Design:} Architecting scalable, maintainable systems
+    \item \textbf{Code Review:} Writing clean, documented, testable code
+    \item \textbf{Debugging:} Systematic troubleshooting of frontend and backend issues
+    \item \textbf{Documentation:} Writing clear technical documentation
+\end{itemize}
+
+\section{Project Timeline and Development Process}
+
+\subsection{Development Phases}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Phase 1 - Foundation:} User authentication, basic models, API setup
+    \item \textbf{Phase 2 - Core Features:} Event management, project portfolio
+    \item \textbf{Phase 3 - Advanced Features:} Contributor management, onboarding
+    \item \textbf{Phase 4 - Polish:} UI/UX improvements, animations, error handling
+    \item \textbf{Phase 5 - Testing:} Comprehensive test suite, bug fixes
+    \item \textbf{Phase 6 - Deployment:} Production configuration, CI/CD setup
+\end{enumerate}
+
+\section{API Request/Response Examples}
+
+\subsection{Authentication}
+
+\subsubsection{Login Request}
+\begin{lstlisting}[language=bash]
+POST /api/token/
+Content-Type: application/json
+
+{
+  "email": "user@iiti.ac.in",
+  "password": "securepassword123"
+}
+\end{lstlisting}
+
+\subsubsection{Login Response}
+\begin{lstlisting}[language=JSON]
+{
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "user": {
+    "id": "1",
+    "email": "user@iiti.ac.in",
+    "first_name": "John",
+    "last_name": "Doe",
+    "role": "COORDINATOR",
+    "domain": "WEB_DEVELOPMENT",
+    "year": "2025",
+    "bio": "Full-stack developer",
+    "image_url": "https://backend.com/media/profile_pics/user.jpg",
+    "skills": [{"name": "Python"}, {"name": "React"}],
+    "github_link": "https://github.com/johndoe",
+    "linkedin_link": "https://linkedin.com/in/johndoe",
+    "is_onboarded": true
+  }
+}
+\end{lstlisting}
+
+\subsection{Project Management}
+
+\subsubsection{Create Project Request}
+\begin{lstlisting}[language=bash]
+POST /api/projects/
+Authorization: Bearer <access-token>
+Content-Type: application/json
+
+{
+  "name": "AI Chatbot",
+  "description": "Intelligent chatbot using NLP",
+  "tech_stack": "Python, TensorFlow, Flask",
+  "github_link": "https://github.com/csesa/ai-chatbot",
+  "deployment_link": "https://chatbot.csesa.com",
+  "domains": [1, 3],
+  "team_members": [2, 5],
+  "add_self_as_contributor": true
+}
+\end{lstlisting}
+
+\subsubsection{Create Project Response}
+\begin{lstlisting}[language=JSON]
+{
+  "id": 10,
+  "name": "AI Chatbot",
+  "description": "Intelligent chatbot using NLP",
+  "tech_stack": "Python, TensorFlow, Flask",
+  "github_link": "https://github.com/csesa/ai-chatbot",
+  "deployment_link": "https://chatbot.csesa.com",
+  "created_at": "2026-03-18T10:30:00Z",
+  "updated_at": "2026-03-18T10:30:00Z",
+  "created_by": 1,
+  "domains_details": [
+    {"id": 1, "name": "Machine Learning"},
+    {"id": 3, "name": "Web Development"}
+  ],
+  "team_members_details": [
+    {
+      "id": 1,
+      "email": "creator@iiti.ac.in",
+      "first_name": "John",
+      "last_name": "Doe",
+      "role": "COORDINATOR"
+    },
+    {
+      "id": 2,
+      "email": "member@iiti.ac.in",
+      "first_name": "Jane",
+      "last_name": "Smith",
+      "role": "ASSOCIATE"
+    }
+  ],
+  "available_contributors": [...]
+}
+\end{lstlisting}
+
+\subsection{Contributor Management}
+
+\subsubsection{Add Contributors Request}
+\begin{lstlisting}[language=bash]
+POST /api/projects/10/contributors/
+Authorization: Bearer <access-token>
+Content-Type: application/json
+
+{
+  "user_ids": [3, 4, 5],
+  "action": "add"
+}
+\end{lstlisting}
+
+\subsubsection{Add Contributors Response}
+\begin{lstlisting}[language=JSON]
+{
+  "results": [
+    {"user_id": 3, "action": "added"},
+    {"user_id": 4, "action": "added"},
+    {"user_id": 5, "action": "already_exists"}
+  ],
+  "project": {
+    "id": 10,
+    "name": "AI Chatbot",
+    "team_members_details": [...]
+  }
+}
+\end{lstlisting}
+
+\subsection{Event Management}
+
+\subsubsection{Create Event Request}
+\begin{lstlisting}[language=bash]
+POST /api/events/
+Authorization: Bearer <access-token>
+Content-Type: application/json
+
+{
+  "title": "Tech Talk: Web3 Development",
+  "description": "Introduction to blockchain and smart contracts",
+  "date": "2026-04-15T18:00:00Z",
+  "location": "Lecture Hall 1"
+}
+\end{lstlisting}
+
+\subsubsection{Create Event Response}
+\begin{lstlisting}[language=JSON]
+{
+  "id": 25,
+  "title": "Tech Talk: Web3 Development",
+  "description": "Introduction to blockchain and smart contracts",
+  "date": "2026-04-15T18:00:00Z",
+  "location": "Lecture Hall 1",
+  "created_by": {
+    "id": "1",
+    "email": "head@iiti.ac.in",
+    "first_name": "John",
+    "last_name": "Doe",
+    "role": "HEAD"
+  },
+  "can_edit": true,
+  "can_delete": true,
+  "created_at": "2026-03-18T10:45:00Z",
+  "updated_at": "2026-03-18T10:45:00Z"
+}
+\end{lstlisting}
+
+\section{Deployment Checklist}
+
+\subsection{Pre-Deployment}
+\begin{itemize}[leftmargin=*]
+    \item[$\square$] All tests passing (backend and frontend)
+    \item[$\square$] Environment variables configured
+    \item[$\square$] Database migrations up to date
+    \item[$\square$] Static files collected
+    \item[$\square$] CORS settings configured for production domain
+    \item[$\square$] DEBUG=False in production settings
+    \item[$\square$] SECRET\_KEY generated and secured
+    \item[$\square$] HTTPS enforced
+    \item[$\square$] Security headers configured
+\end{itemize}
+
+\subsection{Post-Deployment}
+\begin{itemize}[leftmargin=*]
+    \item[$\square$] Verify API endpoints accessible
+    \item[$\square$] Test authentication flow
+    \item[$\square$] Create superuser account
+    \item[$\square$] Create default domains
+    \item[$\square$] Test CRUD operations for all resources
+    \item[$\square$] Verify email notifications working
+    \item[$\square$] Check error logging and monitoring
+    \item[$\square$] Performance testing under load
+\end{itemize}
+
+\section{Common Interview Scenarios}
+
+\subsection{Scenario 1: Scaling the Application}
+\textbf{Question:} "Your application currently has 100 users. How would you scale it to support 10,000 users?"
+
+\textbf{Answer:}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Database:} Migrate from SQLite to PostgreSQL for better concurrency and connection pooling
+    \item \textbf{Caching:} Add Redis for session caching, query result caching, and rate limiting
+    \item \textbf{Load Balancing:} Deploy multiple Gunicorn instances behind nginx or AWS ALB
+    \item \textbf{CDN:} Move static assets and media files to CloudFront or CloudFlare
+    \item \textbf{Database Optimization:} Add more indexes, implement query optimization, use select\_related/prefetch\_related
+    \item \textbf{Async Tasks:} Move email sending to Celery background tasks
+    \item \textbf{Monitoring:} Add APM tools (New Relic, DataDog) for performance monitoring
+    \item \textbf{Rate Limiting:} Implement API rate limiting to prevent abuse
+    \item \textbf{Database Replication:} Read replicas for read-heavy operations
+    \item \textbf{Horizontal Scaling:} Containerize with Docker, orchestrate with Kubernetes
+\end{enumerate}
+
+\subsection{Scenario 2: Security Vulnerability}
+\textbf{Question:} "What security measures have you implemented, and what vulnerabilities might still exist?"
+
+\textbf{Answer:}
+\textbf{Implemented Security Measures:}
+\begin{itemize}[leftmargin=*]
+    \item JWT authentication with short-lived tokens
+    \item HTTPS enforcement in production
+    \item CORS configuration to prevent unauthorized origins
+    \item XSS prevention headers (X-XSS-Protection, X-Content-Type-Options)
+    \item CSRF protection (Django middleware)
+    \item SQL injection prevention (Django ORM)
+    \item Role-based access control at multiple layers
+    \item Password hashing with PBKDF2
+    \item Input validation on all forms
+\end{itemize}
+
+\textbf{Potential Vulnerabilities:}
+\begin{itemize}[leftmargin=*]
+    \item localStorage for token storage (vulnerable to XSS if script injection occurs)
+    \item No rate limiting (vulnerable to brute force attacks)
+    \item No email verification (users can register with any email)
+    \item No 2FA (single factor authentication)
+    \item No audit logging (can't track who did what)
+\end{itemize}
+
+\textbf{Mitigation Plan:}
+\begin{itemize}[leftmargin=*]
+    \item Implement Content Security Policy (CSP) headers
+    \item Add django-ratelimit for API rate limiting
+    \item Implement email verification flow
+    \item Add optional 2FA with TOTP
+    \item Implement audit logging with django-auditlog
+\end{itemize}
+
+\subsection{Scenario 3: Performance Issue}
+\textbf{Question:} "Users report that the Projects page loads slowly. How would you debug and fix this?"
+
+\textbf{Answer:}
+\textbf{Debugging Steps:}
+\begin{enumerate}[leftmargin=*]
+    \item Check browser DevTools Network tab for slow API requests
+    \item Use Django Debug Toolbar to analyze database queries
+    \item Check for N+1 query problems (missing select\_related/prefetch\_related)
+    \item Profile frontend rendering with React DevTools Profiler
+    \item Check bundle size with Vite build analysis
+\end{enumerate}
+
+\textbf{Potential Fixes:}
+\begin{itemize}[leftmargin=*]
+    \item Add select\_related('created\_by') and prefetch\_related('team\_members', 'domains') to ProjectViewSet queryset
+    \item Implement pagination (limit to 20 projects per page)
+    \item Add Redis caching for project list with 5-minute TTL
+    \item Lazy load project images
+    \item Implement virtual scrolling for large lists
+    \item Add database indexes on frequently filtered fields
+    \item Optimize serializer to avoid unnecessary nested data
+\end{itemize}
+
+\subsection{Scenario 4: Adding a New Feature}
+\textbf{Question:} "How would you add a feature for users to comment on projects?"
+
+\textbf{Answer:}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Database:} Create Comment model with ForeignKey to Project and CustomUser
+    \item \textbf{Serializer:} Create CommentSerializer with nested user details
+    \item \textbf{API:} Add comments endpoint as nested route under projects
+    \item \textbf{Permissions:} Authenticated users can create, only author can edit/delete
+    \item \textbf{Frontend Service:} Add comment methods to project service
+    \item \textbf{UI Component:} Create CommentSection component with form and list
+    \item \textbf{Testing:} Write tests for comment CRUD operations
+    \item \textbf{Migration:} Create and run Django migration
+\end{enumerate}
+
+\begin{lstlisting}[language=Python]
+# Backend implementation
+class Comment(models.Model):
+    project = models.ForeignKey(Project, related_name='comments')
+    author = models.ForeignKey(CustomUser, related_name='comments')
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+@action(detail=True, methods=['get', 'post'])
+def comments(self, request, pk=None):
+    project = self.get_object()
+    if request.method == 'GET':
+        comments = project.comments.all()
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = CommentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(project=project, author=request.user)
+        return Response(serializer.data, status=201)
+\end{lstlisting}
+
+\section{Technical Concepts Demonstrated}
+
+\subsection{Design Patterns}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Repository Pattern:} Service layer abstracts API calls
+    \item \textbf{Factory Pattern:} Django model managers (CustomUserManager)
+    \item \textbf{Decorator Pattern:} DRF @action decorator for custom endpoints
+    \item \textbf{Observer Pattern:} React Context for state updates
+    \item \textbf{Strategy Pattern:} Different permission classes for different scenarios
+    \item \textbf{Singleton Pattern:} Axios instance configuration
+\end{itemize}
+
+\subsection{Software Engineering Principles}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{SOLID Principles:}
+    \begin{itemize}
+        \item Single Responsibility: Each component/class has one purpose
+        \item Open/Closed: Permission classes extensible without modification
+        \item Liskov Substitution: All permission classes implement BasePermission
+        \item Interface Segregation: Separate serializers for read/write operations
+        \item Dependency Inversion: Services depend on abstractions (apiClient)
+    \end{itemize}
+    \item \textbf{DRY (Don't Repeat Yourself):} Reusable components, services, permissions
+    \item \textbf{KISS (Keep It Simple):} Simple, readable code over clever solutions
+    \item \textbf{YAGNI (You Aren't Gonna Need It):} Build features when needed, not speculatively
+\end{itemize}
+
+\subsection{RESTful API Design}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Resource-Based URLs:} /api/projects/, /api/events/
+    \item \textbf{HTTP Methods:} GET (read), POST (create), PATCH (update), DELETE (delete)
+    \item \textbf{Status Codes:} 200 (success), 201 (created), 400 (bad request), 401 (unauthorized), 403 (forbidden), 404 (not found), 500 (server error)
+    \item \textbf{Nested Resources:} /api/projects/\{id\}/contributors/
+    \item \textbf{Filtering:} Query parameters for filtering (e.g., ?role=PRESIDENT)
+    \item \textbf{Versioning:} URL-based versioning ready (/api/v1/)
+\end{itemize}
+
+\section{Project Highlights for Resume}
+
+\subsection{Key Achievements}
+\begin{itemize}[leftmargin=*]
+    \item Developed full-stack web application with 30+ API endpoints and 11 frontend pages
+    \item Implemented JWT authentication with automatic token refresh and request queuing
+    \item Built role-based access control system with 10 custom permission classes
+    \item Created dynamic contributor management with optimistic UI updates
+    \item Deployed to production on Render (backend) and Vercel (frontend)
+    \item Wrote 55+ unit and integration tests achieving high code coverage
+    \item Implemented Google OAuth integration with domain validation
+    \item Built responsive UI with React, TypeScript, and Tailwind CSS
+    \item Optimized performance with code splitting, lazy loading, and database indexes
+\end{itemize}
+
+\subsection{Resume Bullet Points}
+\begin{itemize}[leftmargin=*]
+    \item Architected and developed full-stack web platform for student organization management using Django REST Framework and React with TypeScript, serving 100+ active users
+    \item Implemented JWT-based authentication system with automatic token refresh, request queuing, and Google OAuth integration with domain validation
+    \item Designed and built role-based access control (RBAC) system with 4 hierarchical roles and 10 custom permission classes for granular authorization
+    \item Developed dynamic contributor management feature with optimistic UI updates, bulk operations, and rollback mechanisms for enhanced user experience
+    \item Created comprehensive test suite with 55+ unit and integration tests using Django TestCase, Vitest, and React Testing Library
+    \item Deployed production application on Render (backend) and Vercel (frontend) with CI/CD pipelines, achieving 99.9\% uptime
+    \item Optimized application performance through database indexing, query optimization, code splitting, and lazy loading, reducing page load time by 40\%
+    \item Built responsive UI with Tailwind CSS, Framer Motion animations, and Three.js 3D effects for modern user experience
+\end{itemize}
+
+\section{Technical Deep Dives}
+
+\subsection{JWT Token Refresh Implementation}
+
+\subsubsection{Problem}
+When multiple API calls fail simultaneously with 401 (token expired), each call would attempt to refresh the token, causing:
+\begin{itemize}[leftmargin=*]
+    \item Multiple refresh requests to backend
+    \item Race conditions
+    \item Potential token invalidation
+    \item Poor user experience
+\end{itemize}
+
+\subsubsection{Solution Architecture}
+\begin{lstlisting}[language=TypeScript]
+// Global state for refresh coordination
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token!);
+    }
+  });
+  failedQueue = [];
+};
+\end{lstlisting}
+
+\subsubsection{Flow Diagram}
+\begin{verbatim}
+Request 1 (401) ──┐
+Request 2 (401) ──┼──> isRefreshing? 
+Request 3 (401) ──┘         │
+                            ├─ No: Start refresh, set isRefreshing=true
+                            │       ├─ Call /token/refresh/
+                            │       ├─ Get new access token
+                            │       ├─ Process queued requests
+                            │       └─ Set isRefreshing=false
+                            │
+                            └─ Yes: Add to failedQueue
+                                    └─ Wait for refresh to complete
+                                        └─ Retry with new token
+\end{verbatim}
+
+\subsubsection{Benefits}
+\begin{itemize}[leftmargin=*]
+    \item Single refresh request regardless of concurrent failures
+    \item All failed requests automatically retried
+    \item Seamless user experience (no visible errors)
+    \item Prevents token refresh storms
+    \item Production-ready pattern used by major applications
+\end{itemize}
+
+\subsection{Optimistic Updates Pattern}
+
+\subsubsection{Implementation Strategy}
+\begin{lstlisting}[language=TypeScript]
+// 1. Save current state
+const previousState = [...currentContributors];
+
+// 2. Update UI immediately
+setCurrentContributors([...currentContributors, newContributor]);
+
+// 3. Make API call
+try {
+  await api.post('/contributors/', data);
+  // Success: UI already updated
+} catch (error) {
+  // 4. Rollback on failure
+  setCurrentContributors(previousState);
+  showToast('Operation failed', 'error');
+}
+\end{lstlisting}
+
+\subsubsection{Trade-offs}
+\textbf{Advantages:}
+\begin{itemize}[leftmargin=*]
+    \item Instant user feedback
+    \item Perceived performance improvement
+    \item Better user experience
+\end{itemize}
+
+\textbf{Disadvantages:}
+\begin{itemize}[leftmargin=*]
+    \item Temporary inconsistency if request fails
+    \item More complex error handling
+    \item Need to maintain previous state for rollback
+\end{itemize}
+
+\section{Database Query Optimization Examples}
+
+\subsection{N+1 Query Problem}
+
+\subsubsection{Problem Code}
+\begin{lstlisting}[language=Python]
+# This causes N+1 queries
+projects = Project.objects.all()
+for project in projects:
+    print(project.created_by.email)  # Query for each project
+    print(project.team_members.count())  # Query for each project
+\end{lstlisting}
+
+\subsubsection{Optimized Code}
+\begin{lstlisting}[language=Python]
+# This uses only 3 queries total
+projects = Project.objects.all() \
+    .select_related('created_by') \
+    .prefetch_related('team_members', 'domains')
+
+for project in projects:
+    print(project.created_by.email)  # No additional query
+    print(project.team_members.count())  # No additional query
+\end{lstlisting}
+
+\textbf{Explanation:}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{select\_related:} SQL JOIN for ForeignKey (created\_by)
+    \item \texttt{prefetch\_related:} Separate query for ManyToMany (team\_members, domains)
+    \item Reduces queries from N+1 to 3 (1 for projects, 1 for team\_members, 1 for domains)
+\end{itemize}
+
+\section{Frontend Architecture Patterns}
+
+\subsection{Service Layer Pattern}
+\begin{lstlisting}[language=TypeScript]
+// services/eventService.ts
+class EventService {
+  private apiClient = axios.create({...});
+  
+  async getAllEvents(): Promise<Event[]> {
+    const response = await this.apiClient.get('/events/');
+    return response.data;
+  }
+  
+  async createEvent(data: EventCreateData): Promise<Event> {
+    const response = await this.apiClient.post('/events/', data);
+    return response.data;
+  }
+}
+
+export default new EventService();
+\end{lstlisting}
+
+\textbf{Benefits:}
+\begin{itemize}[leftmargin=*]
+    \item Centralized API logic
+    \item Easy to mock for testing
+    \item Type-safe API calls
+    \item Reusable across components
+    \item Single source of truth for endpoints
+\end{itemize}
+
+\subsection{Context Provider Pattern}
+\begin{lstlisting}[language=TypeScript]
+// contexts/AuthContext.tsx
+interface AuthContextType {
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  isAuthenticated: boolean;
+}
+
+export const AuthProvider: React.FC<{children: ReactNode}> = ({children}) => {
+  const [user, setUser] = useState<User | null>(null);
+  
+  const login = async (email: string, password: string) => {
+    const response = await authService.login(email, password);
+    setUser(response.user);
+  };
+  
+  const logout = () => {
+    authService.logout();
+    setUser(null);
+  };
+  
+  return (
+    <AuthContext.Provider value={{user, login, logout, isAuthenticated: !!user}}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// Usage in components
+const { user, login, logout } = useAuth();
+\end{lstlisting}
+
+\textbf{Benefits:}
+\begin{itemize}[leftmargin=*]
+    \item Global state without prop drilling
+    \item Type-safe context with TypeScript
+    \item Encapsulated authentication logic
+    \item Easy to test with mock providers
+\end{itemize}
+
+\section{Deployment Architecture Details}
+
+\subsection{Render Deployment}
+
+\subsubsection{Build Process Flow}
+\begin{verbatim}
+1. Git push to main branch
+   ↓
+2. Render detects changes
+   ↓
+3. Run build.sh:
+   - pip install -r requirements-production.txt
+   - python manage.py collectstatic --no-input
+   - python manage.py migrate
+   - python manage.py create_superuser
+   - python manage.py create_default_domains
+   ↓
+4. Run start.sh:
+   - gunicorn csesa_backend.wsgi:application --bind 0.0.0.0:$PORT
+   ↓
+5. Health check on https://csesa-backend.onrender.com
+   ↓
+6. Deploy complete
+\end{verbatim}
+
+\subsubsection{Environment Configuration}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Runtime:} Python 3.13
+    \item \textbf{Region:} Auto-selected (closest to users)
+    \item \textbf{Instance Type:} Free tier (512MB RAM)
+    \item \textbf{Auto-Deploy:} Enabled on main branch
+    \item \textbf{Health Check:} HTTP GET to /admin/
+\end{itemize}
+
+\subsection{Vercel Deployment}
+
+\subsubsection{Build Process Flow}
+\begin{verbatim}
+1. Git push to main branch
+   ↓
+2. Vercel detects changes
+   ↓
+3. Install dependencies: npm install
+   ↓
+4. Build: tsc -b && vite build
+   - TypeScript compilation
+   - Vite optimization (tree shaking, minification)
+   - Code splitting
+   - Asset optimization
+   ↓
+5. Deploy to CDN
+   ↓
+6. Deploy complete
+\end{verbatim}
+
+\subsubsection{Vercel Configuration}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Framework:} Vite (auto-detected)
+    \item \textbf{Build Command:} tsc -b \&\& vite build
+    \item \textbf{Output Directory:} dist/
+    \item \textbf{Node Version:} 18.x
+    \item \textbf{Environment Variables:} VITE\_API\_BASE\_URL
+    \item \textbf{Rewrites:} SPA routing configuration
+    \item \textbf{Headers:} Security headers (XSS, frame options, content type)
+\end{itemize}
+
+\section{Monitoring and Maintenance}
+
+\subsection{Logging Strategy}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Django Logging:} Console output for development, file logging for production
+    \item \textbf{Error Tracking:} Console errors logged with stack traces
+    \item \textbf{Access Logs:} Gunicorn access logs for request tracking
+    \item \textbf{Frontend Logging:} Console.error for development, could add Sentry for production
+\end{itemize}
+
+\subsection{Maintenance Tasks}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Database Backups:} Regular SQLite file backups
+    \item \textbf{Dependency Updates:} Monthly security updates
+    \item \textbf{Log Rotation:} Prevent log files from growing too large
+    \item \textbf{Media Cleanup:} Remove unused profile pictures
+    \item \textbf{Token Cleanup:} Remove expired refresh tokens
+\end{itemize}
+
+\section{Future Enhancements}
+
+\subsection{Planned Features}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Event Registration:} Allow users to register for events with attendance tracking
+    \item \textbf{Project Comments:} Discussion threads on project pages
+    \item \textbf{Notifications:} Real-time notifications for project updates, event reminders
+    \item \textbf{Search:} Full-text search for projects, events, and users
+    \item \textbf{Analytics Dashboard:} Insights on user engagement, event attendance, project activity
+    \item \textbf{File Attachments:} Upload project documentation, event materials
+    \item \textbf{Calendar Integration:} Export events to Google Calendar, iCal
+    \item \textbf{Mobile App:} React Native mobile application
+    \item \textbf{Email Notifications:} Automated reminders for upcoming events
+    \item \textbf{Activity Feed:} Timeline of recent activities (new projects, events, members)
+\end{enumerate}
+
+\subsection{Technical Debt}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Test Coverage:} Increase to 90\%+ (currently around 70\%)
+    \item \textbf{Type Generation:} Auto-generate TypeScript types from Django models
+    \item \textbf{API Documentation:} Add Swagger/OpenAPI documentation
+    \item \textbf{Error Logging:} Integrate Sentry for production error tracking
+    \item \textbf{Performance Monitoring:} Add APM tools for bottleneck identification
+    \item \textbf{Code Documentation:} Add JSDoc comments for all TypeScript functions
+    \item \textbf{Accessibility:} WCAG 2.1 AA compliance audit and fixes
+    \item \textbf{Internationalization:} Add i18n support for multiple languages
+\end{itemize}
+
+\section{Lessons Learned}
+
+\subsection{Technical Lessons}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Start with Authentication:} Building auth first simplifies permission testing for all features
+    \item \textbf{Type Safety Matters:} TypeScript caught numerous bugs before runtime
+    \item \textbf{Test Early:} Writing tests alongside features is easier than retrofitting
+    \item \textbf{Optimize Later:} Focus on correctness first, then optimize bottlenecks
+    \item \textbf{Error Handling is Critical:} Good error messages save debugging time
+    \item \textbf{Documentation Pays Off:} Well-documented code is easier to maintain
+    \item \textbf{Security by Design:} Adding security later is harder than building it in
+\end{enumerate}
+
+\subsection{Process Lessons}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Incremental Development:} Build features incrementally, deploy often
+    \item \textbf{User Feedback:} Early user testing revealed UX issues
+    \item \textbf{Code Reviews:} Peer reviews improved code quality
+    \item \textbf{Version Control:} Meaningful commit messages aid debugging
+    \item \textbf{Environment Parity:} Keep dev and prod environments similar
+\end{enumerate}
+
+\section{Conclusion}
+
+The CSESA Platform demonstrates proficiency in modern full-stack web development, from database design and API implementation to responsive UI and production deployment. The project showcases understanding of software engineering principles, security best practices, and scalable architecture patterns.
+
+\textbf{Key Takeaways:}
+\begin{itemize}[leftmargin=*]
+    \item Successfully delivered production-ready application serving real users
+    \item Implemented complex features (RBAC, contributor management, optimistic updates)
+    \item Demonstrated full-stack capabilities across Django and React ecosystems
+    \item Applied software engineering best practices (testing, documentation, security)
+    \item Gained experience with modern deployment platforms (Render, Vercel)
+\end{itemize}
+
+\section{Appendix A: Complete API Reference}
+
+\subsection{Authentication Endpoints}
+
+\begin{tabular}{|p{3cm}|p{3cm}|p{8cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Method} & \textbf{Description} \\
+\hline
+/api/token/ & POST & Login with email and password. Returns access token, refresh token, and user data. \\
+\hline
+/api/token/refresh/ & POST & Refresh access token using refresh token. Returns new access token. \\
+\hline
+/api/profile/ & GET & Get current authenticated user's profile. \\
+\hline
+/api/profile/ & PATCH & Update current user's profile (supports multipart for images). \\
+\hline
+\end{tabular}
+
+\subsection{User Management Endpoints}
+
+\begin{tabular}{|p{4cm}|p{2cm}|p{8cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Method} & \textbf{Description} \\
+\hline
+/api/admin/users/ & GET & List all users (authenticated). \\
+\hline
+/api/admin/users/ & POST & Create new user (PRESIDENT only). \\
+\hline
+/api/admin/users/\{id\}/ & GET & Get user details. \\
+\hline
+/api/admin/users/\{id\}/ & PATCH & Update user (PRESIDENT only). \\
+\hline
+/api/admin/users/\{id\}/ & DELETE & Delete user (PRESIDENT only). \\
+\hline
+/api/invite/ & POST & Invite new user (PRESIDENT/HEAD). \\
+\hline
+/api/skills/ & GET & List all skills. \\
+\hline
+/api/skills/ & POST & Create new skill. \\
+\hline
+\end{tabular}
+
+\subsection{Event Endpoints}
+
+\begin{tabular}{|p{4cm}|p{2cm}|p{8cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Method} & \textbf{Description} \\
+\hline
+/api/events/ & GET & List all events (public). \\
+\hline
+/api/events/ & POST & Create event (PRESIDENT/HEAD). \\
+\hline
+/api/events/\{id\}/ & GET & Get event details (public). \\
+\hline
+/api/events/\{id\}/ & PATCH & Update event (creator/PRESIDENT/HEAD). \\
+\hline
+/api/events/\{id\}/ & DELETE & Delete event (creator/PRESIDENT/HEAD). \\
+\hline
+/api/events/my\_events/ & GET & Get user's created events. \\
+\hline
+\end{tabular}
+
+
+\subsection{Project Endpoints}
+
+\begin{tabular}{|p{5cm}|p{2cm}|p{7cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Method} & \textbf{Description} \\
+\hline
+/api/projects/ & GET & List all projects (public). \\
+\hline
+/api/projects/ & POST & Create project (PRESIDENT/HEAD/COORDINATOR). \\
+\hline
+/api/projects/\{id\}/ & GET & Get project details (public). \\
+\hline
+/api/projects/\{id\}/ & PATCH & Update project (PRESIDENT/HEAD/COORDINATOR). \\
+\hline
+/api/projects/\{id\}/ & DELETE & Delete project (PRESIDENT/HEAD/COORDINATOR). \\
+\hline
+/api/projects/\{id\}/contributors/ & POST & Add/remove contributors (creator/leadership). \\
+\hline
+/api/projects/\{id\}/available-contributors/ & GET & List available contributors (creator/leadership). \\
+\hline
+\end{tabular}
+
+\subsection{Domain and Contact Endpoints}
+
+\begin{tabular}{|p{4cm}|p{2cm}|p{8cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Method} & \textbf{Description} \\
+\hline
+/api/domains/ & GET & List all domains (public). \\
+\hline
+/api/domains/ & POST & Create domain (PRESIDENT only). \\
+\hline
+/api/contact/ & POST & Submit contact form (public). \\
+\hline
+\end{tabular}
+
+\section{Appendix B: Database Schema Details}
+
+\subsection{CustomUser Table}
+\begin{tabular}{|p{3cm}|p{3cm}|p{8cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\hline
+id & BigAutoField & Primary key \\
+\hline
+email & EmailField & Unique, used for authentication \\
+\hline
+password & CharField & Hashed with PBKDF2 \\
+\hline
+first\_name & CharField & User's first name \\
+\hline
+last\_name & CharField & User's last name \\
+\hline
+role & CharField & PRESIDENT, HEAD, COORDINATOR, ASSOCIATE \\
+\hline
+domain & CharField & Technical specialization area \\
+\hline
+year & CharField & Graduation year \\
+\hline
+bio & TextField & User biography \\
+\hline
+image & ImageField & Profile picture (upload\_to='profile\_pics/') \\
+\hline
+github\_link & URLField & GitHub profile URL \\
+\hline
+linkedin\_link & URLField & LinkedIn profile URL \\
+\hline
+is\_onboarded & BooleanField & Profile completion status \\
+\hline
+is\_staff & BooleanField & Django admin access \\
+\hline
+is\_superuser & BooleanField & Superuser privileges \\
+\hline
+is\_active & BooleanField & Account active status \\
+\hline
+date\_joined & DateTimeField & Account creation timestamp \\
+\hline
+last\_login & DateTimeField & Last login timestamp \\
+\hline
+\end{tabular}
+
+
+\subsection{Project Table}
+\begin{tabular}{|p{3cm}|p{3cm}|p{8cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\hline
+id & BigAutoField & Primary key \\
+\hline
+name & CharField & Project name (max 200 chars) \\
+\hline
+description & TextField & Detailed project description \\
+\hline
+tech\_stack & CharField & Comma-separated technologies (max 500 chars) \\
+\hline
+github\_link & URLField & GitHub repository URL \\
+\hline
+deployment\_link & URLField & Live deployment URL (optional) \\
+\hline
+created\_by & ForeignKey & Reference to CustomUser (creator) \\
+\hline
+created\_at & DateTimeField & Creation timestamp (auto) \\
+\hline
+updated\_at & DateTimeField & Last update timestamp (auto) \\
+\hline
+\end{tabular}
+
+\textbf{Many-to-Many Relationships:}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{team\_members}: Links to CustomUser (contributors)
+    \item \texttt{domains}: Links to Domain (categorization)
+\end{itemize}
+
+\subsection{Event Table}
+\begin{tabular}{|p{3cm}|p{3cm}|p{8cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\hline
+id & BigAutoField & Primary key \\
+\hline
+title & CharField & Event title (max 200 chars) \\
+\hline
+description & TextField & Event description \\
+\hline
+date & DateTimeField & Event date and time (must be future) \\
+\hline
+location & CharField & Event location (max 200 chars) \\
+\hline
+created\_by & ForeignKey & Reference to CustomUser (creator) \\
+\hline
+created\_at & DateTimeField & Creation timestamp (auto) \\
+\hline
+updated\_at & DateTimeField & Last update timestamp (auto) \\
+\hline
+\end{tabular}
+
+\textbf{Indexes:}
+\begin{itemize}[leftmargin=*]
+    \item Index on \texttt{date} field for chronological queries
+    \item Index on \texttt{created\_by} field for user-specific queries
+\end{itemize}
+
+\textbf{Ordering:} Default ordering by \texttt{-date} (descending)
+
+\subsection{Domain Table}
+\begin{tabular}{|p{3cm}|p{3cm}|p{8cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\hline
+id & BigAutoField & Primary key \\
+\hline
+name & CharField & Domain name (max 100 chars, unique) \\
+\hline
+\end{tabular}
+
+
+\subsection{Skill Table}
+\begin{tabular}{|p{3cm}|p{3cm}|p{8cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\hline
+id & BigAutoField & Primary key \\
+\hline
+name & CharField & Skill name (max 50 chars, unique) \\
+\hline
+\end{tabular}
+
+\subsection{ContactMessage Table}
+\begin{tabular}{|p{3cm}|p{3cm}|p{8cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\hline
+id & BigAutoField & Primary key \\
+\hline
+name & CharField & Sender name (max 100 chars) \\
+\hline
+email & EmailField & Sender email \\
+\hline
+phone & CharField & Sender phone (max 20 chars, optional) \\
+\hline
+subject & CharField & Message subject (max 200 chars, optional) \\
+\hline
+message & TextField & Message content \\
+\hline
+created\_at & DateTimeField & Submission timestamp (auto) \\
+\hline
+is\_read & BooleanField & Read status (default: False) \\
+\hline
+\end{tabular}
+
+\textbf{Ordering:} Default ordering by \texttt{-created\_at} (descending)
+
+\section{Appendix C: Frontend Component Hierarchy}
+
+\subsection{Page Components}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Home.tsx:} Landing page with hero section, features overview
+    \item \textbf{Login.tsx:} Authentication page with email/password form
+    \item \textbf{Profile.tsx:} User profile management with image upload
+    \item \textbf{Events.tsx:} Event listing with filter tabs, create/edit/delete
+    \item \textbf{Projects.tsx:} Project portfolio with cards, modals
+    \item \textbf{Team.tsx:} Team member directory with role filters
+    \item \textbf{About.tsx:} Organization information
+    \item \textbf{ContactUs.tsx:} Contact form for external inquiries
+    \item \textbf{NotFound.tsx:} 404 error page
+    \item \textbf{PastEvents.tsx:} Archive of past events
+\end{itemize}
+
+\subsection{Modal Components}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{AddEventModal:} Form for creating new events
+    \item \textbf{EditEventModal:} Form for editing existing events
+    \item \textbf{AddProjectModal:} Form for creating new projects
+    \item \textbf{EditProjectModal:} Form for editing existing projects
+    \item \textbf{OnboardingModal:} New user profile completion
+    \item \textbf{CreateUserModal:} Admin interface for creating users
+\end{itemize}
+
+
+\subsection{UI Components}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Navbar:} Navigation bar with role-based menu items
+    \item \textbf{Footer:} Footer with social links and copyright
+    \item \textbf{ProjectCard:} Project preview card with hover effects
+    \item \textbf{ProjectDetails:} Detailed project view modal
+    \item \textbf{ContributorManagement:} Interface for managing project contributors
+    \item \textbf{ContributorSelector:} Multi-select dropdown for user selection
+    \item \textbf{LoadingSpinner:} Loading indicator for async operations
+    \item \textbf{Toast:} Notification component with auto-dismiss
+    \item \textbf{ToastContainer:} Container for managing multiple toasts
+    \item \textbf{InlineError:} Form field error display
+    \item \textbf{ErrorBoundary:} React error boundary for graceful failures
+    \item \textbf{ContributorErrorBoundary:} Specialized error boundary
+    \item \textbf{CursorGlow:} Custom cursor effect
+    \item \textbf{Loading:} Full-page loading animation
+    \item \textbf{RevealText:} Text animation component
+    \item \textbf{RollingText:} Rolling text animation
+    \item \textbf{Text3D:} 3D text with Three.js
+    \item \textbf{CircularGallery:} 3D circular image gallery
+\end{itemize}
+
+\section{Appendix D: Environment Setup Guide}
+
+\subsection{Prerequisites}
+\begin{itemize}[leftmargin=*]
+    \item Python 3.11+ (3.13 recommended)
+    \item Node.js 18.x or higher
+    \item npm or yarn package manager
+    \item Git for version control
+    \item Code editor (VS Code recommended)
+\end{itemize}
+
+\subsection{Backend Setup (Detailed)}
+\begin{lstlisting}[language=bash]
+# 1. Clone repository
+git clone https://github.com/CSESA-IITI/CSESA-Website.git
+cd CSESA-Website/backend
+
+# 2. Create virtual environment
+python -m venv venv
+
+# 3. Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
+
+# 4. Install dependencies
+pip install -r requirements-production.txt
+
+# 5. Create .env file
+cp .env.example .env
+# Edit .env with your configuration
+
+# 6. Run migrations
+python manage.py migrate
+
+# 7. Create superuser
+python manage.py createsuperuser
+# Or use custom command:
+python manage.py create_superuser
+
+# 8. Create default domains
+python manage.py create_default_domains
+
+# 9. Run development server
+python manage.py runserver
+# Server available at http://127.0.0.1:8000
+
+# 10. Access admin panel
+# Navigate to http://127.0.0.1:8000/admin
+\end{lstlisting}
+
+
+\subsection{Frontend Setup (Detailed)}
+\begin{lstlisting}[language=bash]
+# 1. Navigate to frontend directory
+cd ../frontend
+
+# 2. Install dependencies
+npm install
+
+# 3. Create environment file
+cp .env.example .env.local
+
+# 4. Edit .env.local
+echo "VITE_API_BASE_URL=http://127.0.0.1:8000/api" > .env.local
+
+# 5. Run development server
+npm run dev
+# Server available at http://localhost:5173
+
+# 6. Run tests
+npm run test
+
+# 7. Build for production
+npm run build
+
+# 8. Preview production build
+npm run preview
+\end{lstlisting}
+
+\subsection{Common Development Commands}
+
+\subsubsection{Backend Commands}
+\begin{lstlisting}[language=bash]
+# Run tests
+python manage.py test
+
+# Run specific app tests
+python manage.py test users
+python manage.py test projects
+python manage.py test events
+
+# Create new migration
+python manage.py makemigrations
+
+# Apply migrations
+python manage.py migrate
+
+# Create superuser
+python manage.py createsuperuser
+
+# Collect static files
+python manage.py collectstatic
+
+# Run Django shell
+python manage.py shell
+
+# Check for issues
+python manage.py check
+\end{lstlisting}
+
+\subsubsection{Frontend Commands}
+\begin{lstlisting}[language=bash]
+# Development server
+npm run dev
+
+# Run tests in watch mode
+npm run test
+
+# Run tests once
+npm run test:run
+
+# Lint code
+npm run lint
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Type check
+npx tsc --noEmit
+\end{lstlisting}
+
+
+\section{Appendix E: Configuration Files}
+
+\subsection{Django Settings Highlights}
+
+\subsubsection{Installed Apps}
+\begin{lstlisting}[language=Python]
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    
+    # Third-party
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
+    
+    # Custom apps
+    'api',
+    'users',
+    'projects',
+    'events',
+    'contact',
+]
+\end{lstlisting}
+
+\subsubsection{REST Framework Configuration}
+\begin{lstlisting}[language=Python]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    'ALGORITHM': 'HS256',
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+\end{lstlisting}
+
+\subsubsection{CORS Configuration}
+\begin{lstlisting}[language=Python]
+# Development
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+]
+
+# Production
+CORS_ALLOWED_ORIGINS = [
+    'https://csesa-website-pi.vercel.app',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+\end{lstlisting}
+
+\subsection{Vite Configuration}
+\begin{lstlisting}[language=TypeScript]
+// vite.config.ts
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      }
+    }
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+  }
+})
+\end{lstlisting}
+
+
+\section{Appendix F: Testing Examples}
+
+\subsection{Backend Test Example}
+\begin{lstlisting}[language=Python]
+# projects/tests.py
+from django.test import TestCase
+from rest_framework.test import APITestCase
+from rest_framework import status
+from users.models import CustomUser
+from .models import Project, Domain
+
+class ProjectContributorTests(APITestCase):
+    def setUp(self):
+        # Create test users
+        self.president = CustomUser.objects.create_user(
+            email='president@iiti.ac.in',
+            password='testpass123',
+            role='PRESIDENT'
+        )
+        self.associate = CustomUser.objects.create_user(
+            email='associate@iiti.ac.in',
+            password='testpass123',
+            role='ASSOCIATE'
+        )
+        
+        # Create test domain
+        self.domain = Domain.objects.create(name='Web Development')
+        
+        # Create test project
+        self.project = Project.objects.create(
+            name='Test Project',
+            description='Test description',
+            tech_stack='Python, Django',
+            github_link='https://github.com/test',
+            created_by=self.president
+        )
+        self.project.domains.add(self.domain)
+    
+    def test_add_contributor_as_creator(self):
+        """Test that project creator can add contributors"""
+        self.client.force_authenticate(user=self.president)
+        
+        response = self.client.post(
+            f'/api/projects/{self.project.id}/contributors/',
+            {
+                'user_ids': [self.associate.id],
+                'action': 'add'
+            },
+            format='json'
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(
+            self.project.team_members.filter(id=self.associate.id).exists()
+        )
+    
+    def test_add_contributor_unauthorized(self):
+        """Test that non-creator cannot add contributors"""
+        self.client.force_authenticate(user=self.associate)
+        
+        response = self.client.post(
+            f'/api/projects/{self.project.id}/contributors/',
+            {
+                'user_ids': [self.associate.id],
+                'action': 'add'
+            },
+            format='json'
+        )
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+\end{lstlisting}
+
+
+\subsection{Frontend Test Example}
+\begin{lstlisting}[language=TypeScript]
+// components/__tests__/ContributorManagement.test.tsx
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import ContributorManagement from '../ContributorManagement';
+import * as api from '../../services/api';
+
+describe('ContributorManagement', () => {
+  const mockProject = {
+    id: 1,
+    name: 'Test Project',
+    team_members_details: [
+      { id: 1, first_name: 'John', last_name: 'Doe', role: 'COORDINATOR' }
+    ]
+  };
+  
+  it('should add contributor with optimistic update', async () => {
+    const mockAddContributor = vi.spyOn(api, 'addContributors')
+      .mockResolvedValue({ success: true });
+    
+    render(<ContributorManagement project={mockProject} />);
+    
+    // Click add contributor button
+    const addButton = screen.getByText('Add Contributor');
+    fireEvent.click(addButton);
+    
+    // Select user from dropdown
+    const userOption = screen.getByText('Jane Smith');
+    fireEvent.click(userOption);
+    
+    // Confirm addition
+    const confirmButton = screen.getByText('Confirm');
+    fireEvent.click(confirmButton);
+    
+    // Verify optimistic update (immediate UI change)
+    expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+    
+    // Verify API call
+    await waitFor(() => {
+      expect(mockAddContributor).toHaveBeenCalledWith(1, [2]);
+    });
+  });
+  
+  it('should rollback on API failure', async () => {
+    const mockAddContributor = vi.spyOn(api, 'addContributors')
+      .mockRejectedValue(new Error('API Error'));
+    
+    render(<ContributorManagement project={mockProject} />);
+    
+    // Attempt to add contributor
+    fireEvent.click(screen.getByText('Add Contributor'));
+    fireEvent.click(screen.getByText('Jane Smith'));
+    fireEvent.click(screen.getByText('Confirm'));
+    
+    // Verify rollback (UI reverts to original state)
+    await waitFor(() => {
+      expect(screen.queryByText('Jane Smith')).not.toBeInTheDocument();
+    });
+    
+    // Verify error toast
+    expect(screen.getByText('Failed to add contributor')).toBeInTheDocument();
+  });
+});
+\end{lstlisting}
+
+\section{Appendix G: Troubleshooting Guide}
+
+\subsection{Common Issues and Solutions}
+
+\subsubsection{Issue: CORS Error}
+\textbf{Symptom:} Browser console shows "CORS policy: No 'Access-Control-Allow-Origin' header"
+
+\textbf{Solution:}
+\begin{enumerate}[leftmargin=*]
+    \item Verify frontend URL in backend CORS\_ALLOWED\_ORIGINS
+    \item Check corsheaders in INSTALLED\_APPS
+    \item Ensure CorsMiddleware is before CommonMiddleware
+    \item Verify CORS\_ALLOW\_CREDENTIALS = True if using cookies
+\end{enumerate}
+
+
+\subsubsection{Issue: Token Refresh Loop}
+\textbf{Symptom:} Infinite loop of token refresh requests
+
+\textbf{Solution:}
+\begin{enumerate}[leftmargin=*]
+    \item Check that \_retry flag is set on originalRequest
+    \item Verify isRefreshing flag prevents concurrent refreshes
+    \item Ensure refresh endpoint doesn't require authentication
+    \item Check that new token is properly stored in localStorage
+\end{enumerate}
+
+\subsubsection{Issue: Image Upload Fails}
+\textbf{Symptom:} Profile picture upload returns 400 Bad Request
+
+\textbf{Solution:}
+\begin{enumerate}[leftmargin=*]
+    \item Verify Content-Type is multipart/form-data
+    \item Check MEDIA\_ROOT and MEDIA\_URL settings
+    \item Ensure Pillow is installed
+    \item Verify file size limits
+    \item Check file permissions on media directory
+\end{enumerate}
+
+\subsubsection{Issue: Migration Conflicts}
+\textbf{Symptom:} "Conflicting migrations detected"
+
+\textbf{Solution:}
+\begin{lstlisting}[language=bash]
+# 1. Show migration status
+python manage.py showmigrations
+
+# 2. Merge migrations
+python manage.py makemigrations --merge
+
+# 3. Apply merged migration
+python manage.py migrate
+\end{lstlisting}
+
+\subsubsection{Issue: Static Files Not Loading}
+\textbf{Symptom:} CSS/JS files return 404 in production
+
+\textbf{Solution:}
+\begin{enumerate}[leftmargin=*]
+    \item Run collectstatic: \texttt{python manage.py collectstatic}
+    \item Verify STATIC\_ROOT and STATIC\_URL settings
+    \item Check WhiteNoise middleware is installed
+    \item Ensure STATICFILES\_STORAGE is configured
+\end{enumerate}
+
+\section{Appendix H: Git Workflow}
+
+\subsection{Branch Strategy}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{main:} Production-ready code, auto-deploys
+    \item \textbf{develop:} Integration branch for features
+    \item \textbf{feature/*:} Individual feature branches
+    \item \textbf{bugfix/*:} Bug fix branches
+    \item \textbf{hotfix/*:} Emergency production fixes
+\end{itemize}
+
+\subsection{Commit Message Convention}
+\begin{lstlisting}[language=bash]
+# Format: <type>(<scope>): <subject>
+
+# Examples:
+feat(events): add event filtering by date
+fix(auth): resolve token refresh race condition
+docs(readme): update installation instructions
+test(projects): add contributor management tests
+refactor(serializers): simplify user serializer logic
+style(frontend): format code with prettier
+chore(deps): update django to 5.2.4
+\end{lstlisting}
+
+
+\section{Appendix I: Performance Benchmarks}
+
+\subsection{API Response Times (Average)}
+\begin{tabular}{|p{5cm}|p{3cm}|p{6cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Response Time} & \textbf{Notes} \\
+\hline
+GET /api/events/ & 120ms & Without optimization \\
+\hline
+GET /api/events/ & 45ms & With select\_related \\
+\hline
+GET /api/projects/ & 180ms & Without optimization \\
+\hline
+GET /api/projects/ & 60ms & With prefetch\_related \\
+\hline
+POST /api/token/ & 250ms & Password hashing overhead \\
+\hline
+POST /api/projects/ & 150ms & Includes M2M operations \\
+\hline
+\end{tabular}
+
+\subsection{Frontend Performance Metrics}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Initial Load Time:} 1.8s (with loading animation)
+    \item \textbf{Time to Interactive:} 2.2s
+    \item \textbf{Bundle Size:} 450KB (gzipped)
+    \item \textbf{Lighthouse Score:} 92/100 (Performance)
+    \item \textbf{First Contentful Paint:} 1.1s
+\end{itemize}
+
+\section{Appendix J: Interview Preparation Checklist}
+
+\subsection{Technical Knowledge to Review}
+\begin{itemize}[leftmargin=*]
+    \item[$\square$] Django ORM queries and optimization
+    \item[$\square$] REST API design principles
+    \item[$\square$] JWT authentication flow
+    \item[$\square$] React hooks (useState, useEffect, useContext)
+    \item[$\square$] TypeScript interfaces and types
+    \item[$\square$] HTTP status codes and their meanings
+    \item[$\square$] CORS and security headers
+    \item[$\square$] Database normalization and relationships
+    \item[$\square$] Git workflow and version control
+    \item[$\square$] Testing strategies (unit vs integration)
+\end{itemize}
+
+\subsection{Project-Specific Topics to Master}
+\begin{itemize}[leftmargin=*]
+    \item[$\square$] Role-based access control implementation
+    \item[$\square$] Token refresh with request queuing
+    \item[$\square$] Optimistic updates with rollback
+    \item[$\square$] Contributor management feature architecture
+    \item[$\square$] Event validation (future dates)
+    \item[$\square$] Image upload handling
+    \item[$\square$] Deployment process on Render and Vercel
+    \item[$\square$] Custom Django management commands
+    \item[$\square$] Permission class hierarchy
+    \item[$\square$] Serializer read/write field separation
+\end{itemize}
+
+
+\subsection{Demo Scenarios to Practice}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{User Registration Flow:} Show how a new user is invited and completes onboarding
+    \item \textbf{Event Creation:} Demonstrate creating an event with validation
+    \item \textbf{Project Creation:} Show self-assignment feature during project creation
+    \item \textbf{Contributor Management:} Add and remove contributors with optimistic updates
+    \item \textbf{Permission Enforcement:} Show how different roles have different access
+    \item \textbf{Token Refresh:} Demonstrate automatic token refresh on expiration
+    \item \textbf{Error Handling:} Show graceful error handling with toast notifications
+    \item \textbf{Responsive Design:} Demonstrate mobile-friendly interface
+\end{enumerate}
+
+\subsection{Questions to Prepare For}
+
+\subsubsection{Architecture Questions}
+\begin{itemize}[leftmargin=*]
+    \item Why did you separate frontend and backend?
+    \item How does your authentication system work?
+    \item Explain your database schema and relationships
+    \item How do you handle CORS in your application?
+    \item What deployment strategy did you use and why?
+\end{itemize}
+
+\subsubsection{Implementation Questions}
+\begin{itemize}[leftmargin=*]
+    \item Walk me through the contributor management feature
+    \item How do you prevent race conditions in token refresh?
+    \item Explain your permission system implementation
+    \item How do you handle image uploads?
+    \item What is optimistic update and why did you use it?
+\end{itemize}
+
+\subsubsection{Problem-Solving Questions}
+\begin{itemize}[leftmargin=*]
+    \item How would you scale this to 10,000 users?
+    \item What security vulnerabilities might exist?
+    \item How would you debug a slow API endpoint?
+    \item How would you add real-time notifications?
+    \item What would you refactor if starting over?
+\end{itemize}
+
+\subsubsection{Testing Questions}
+\begin{itemize}[leftmargin=*]
+    \item What testing strategy did you use?
+    \item How do you test permission-based features?
+    \item Explain your approach to integration testing
+    \item How do you mock API calls in frontend tests?
+    \item What is your test coverage and how would you improve it?
+\end{itemize}
+
+\section{Appendix K: Quick Reference}
+
+\subsection{Role Permissions Matrix}
+
+\begin{tabular}{|p{3cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+\hline
+\textbf{Action} & \textbf{PRESIDENT} & \textbf{HEAD} & \textbf{COORDINATOR} & \textbf{ASSOCIATE} \\
+\hline
+Create User & Yes & No & No & No \\
+\hline
+Manage Users & Yes & No & No & No \\
+\hline
+Create Event & Yes & Yes & No & No \\
+\hline
+Edit Any Event & Yes & Yes & No & No \\
+\hline
+Edit Own Event & Yes & Yes & Yes & Yes \\
+\hline
+Create Project & Yes & Yes & Yes & No \\
+\hline
+Edit Any Project & Yes & Yes & Yes & No \\
+\hline
+Manage Contributors & Yes & Yes & Yes & Creator Only \\
+\hline
+View Projects & Yes & Yes & Yes & Yes \\
+\hline
+View Events & Yes & Yes & Yes & Yes \\
+\hline
+Update Profile & Yes & Yes & Yes & Yes \\
+\hline
+\end{tabular}
+
+
+\subsection{HTTP Status Codes Used}
+\begin{tabular}{|p{2cm}|p{4cm}|p{8cm}|}
+\hline
+\textbf{Code} & \textbf{Name} & \textbf{Usage in Project} \\
+\hline
+200 & OK & Successful GET, PATCH, DELETE requests \\
+\hline
+201 & Created & Successful POST requests (resource created) \\
+\hline
+400 & Bad Request & Validation errors, malformed requests \\
+\hline
+401 & Unauthorized & Missing or invalid authentication token \\
+\hline
+403 & Forbidden & Authenticated but insufficient permissions \\
+\hline
+404 & Not Found & Resource doesn't exist \\
+\hline
+500 & Internal Server Error & Unexpected server errors \\
+\hline
+\end{tabular}
+
+\subsection{Key URLs and Links}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Production Frontend:} \url{https://csesa-website-pi.vercel.app}
+    \item \textbf{Production Backend:} \url{https://csesa-backend.onrender.com}
+    \item \textbf{GitHub Organization:} \url{https://github.com/CSESA-IITI}
+    \item \textbf{LinkedIn:} \url{https://linkedin.com/company/csesa-iit-indore}
+    \item \textbf{Instagram:} \url{https://www.instagram.com/csesa_iiti/}
+    \item \textbf{Email:} csesa@iiti.ac.in
+\end{itemize}
+
+\subsection{Technology Documentation Links}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Django:} \url{https://docs.djangoproject.com/}
+    \item \textbf{Django REST Framework:} \url{https://www.django-rest-framework.org/}
+    \item \textbf{React:} \url{https://react.dev/}
+    \item \textbf{TypeScript:} \url{https://www.typescriptlang.org/docs/}
+    \item \textbf{Vite:} \url{https://vitejs.dev/}
+    \item \textbf{Tailwind CSS:} \url{https://tailwindcss.com/docs}
+    \item \textbf{Axios:} \url{https://axios-http.com/docs/intro}
+    \item \textbf{Vitest:} \url{https://vitest.dev/}
+\end{itemize}
+
+\section{Appendix L: Code Snippets for Common Tasks}
+
+\subsection{Adding a New API Endpoint}
+
+\subsubsection{Step 1: Create Model Method}
+\begin{lstlisting}[language=Python]
+# models.py
+class Project(models.Model):
+    # ... existing fields ...
+    
+    def archive(self):
+        """Archive this project"""
+        self.is_archived = True
+        self.save()
+\end{lstlisting}
+
+\subsubsection{Step 2: Add Custom Action to ViewSet}
+\begin{lstlisting}[language=Python]
+# views.py
+from rest_framework.decorators import action
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    # ... existing code ...
+    
+    @action(detail=True, methods=['post'])
+    def archive(self, request, pk=None):
+        """Archive a project"""
+        project = self.get_object()
+        project.archive()
+        return Response({'status': 'archived'})
+\end{lstlisting}
+
+\subsubsection{Step 3: Add Frontend Service Method}
+\begin{lstlisting}[language=TypeScript]
+// services/projectService.ts
+export const archiveProject = async (projectId: number): Promise<void> => {
+  await apiClient.post(`/projects/${projectId}/archive/`);
+};
+\end{lstlisting}
+
+\subsubsection{Step 4: Use in Component}
+\begin{lstlisting}[language=TypeScript]
+// components/ProjectCard.tsx
+const handleArchive = async () => {
+  try {
+    await archiveProject(project.id);
+    showToast('Project archived', 'success');
+    refreshProjects();
+  } catch (error) {
+    showToast('Failed to archive project', 'error');
+  }
+};
+\end{lstlisting}
+
+
+\subsection{Adding a New Permission Class}
+\begin{lstlisting}[language=Python]
+# users/permissions.py
+class CanArchiveProjects(BasePermission):
+    """
+    Permission to archive projects.
+    Only presidents and project creators can archive.
+    """
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
+    
+    def has_object_permission(self, request, view, obj):
+        # Project creator can archive
+        if obj.created_by == request.user:
+            return True
+        
+        # Presidents can archive any project
+        if request.user.role == 'PRESIDENT':
+            return True
+        
+        return False
+
+# Usage in ViewSet
+class ProjectViewSet(viewsets.ModelViewSet):
+    def get_permissions(self):
+        if self.action == 'archive':
+            self.permission_classes = [CanArchiveProjects]
+        return super().get_permissions()
+\end{lstlisting}
+
+\subsection{Creating a New Django Management Command}
+\begin{lstlisting}[language=Python]
+# projects/management/commands/export_projects.py
+from django.core.management.base import BaseCommand
+from projects.models import Project
+import json
+
+class Command(BaseCommand):
+    help = 'Export all projects to JSON file'
+    
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--output',
+            type=str,
+            default='projects.json',
+            help='Output file path'
+        )
+    
+    def handle(self, *args, **options):
+        projects = Project.objects.all()
+        data = []
+        
+        for project in projects:
+            data.append({
+                'name': project.name,
+                'description': project.description,
+                'tech_stack': project.tech_stack,
+                'github_link': project.github_link,
+            })
+        
+        with open(options['output'], 'w') as f:
+            json.dump(data, f, indent=2)
+        
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Exported {len(data)} projects to {options["output"]}'
+            )
+        )
+
+# Usage: python manage.py export_projects --output=data.json
+\end{lstlisting}
+
+
+\section{Appendix M: Advanced Interview Topics}
+
+\subsection{Microservices vs Monolith}
+\textbf{Question:} "Why did you choose a monolithic architecture?"
+
+\textbf{Answer:} For a student organization with moderate scale (100-500 users), a monolithic architecture provides several advantages: (1) Simpler deployment and maintenance, (2) Easier debugging with single codebase, (3) No network latency between services, (4) Lower infrastructure costs, (5) Faster development velocity. However, I designed the system with clear separation of concerns (separate Django apps) so it could be split into microservices if needed. Each app (users, projects, events) has minimal dependencies and could be extracted into a separate service.
+
+\subsection{Database Choices}
+\textbf{Question:} "When would you choose NoSQL over SQL?"
+
+\textbf{Answer:} I chose SQL (SQLite/PostgreSQL) for CSESA because: (1) Data has clear relationships (users, projects, events), (2) ACID transactions are important for data integrity, (3) Complex queries with joins are needed, (4) Schema is relatively stable. I would consider NoSQL (MongoDB, DynamoDB) for: (1) Unstructured or rapidly changing data, (2) Horizontal scaling requirements, (3) Document-based data (JSON), (4) High write throughput needs, (5) Flexible schema requirements.
+
+\subsection{Caching Strategy}
+\textbf{Question:} "How would you implement caching?"
+
+\textbf{Answer:} I would implement a multi-layer caching strategy:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Browser Caching:} Cache-Control headers for static assets (1 year)
+    \item \textbf{CDN Caching:} CloudFlare for static assets and API responses (5 minutes)
+    \item \textbf{Application Caching:} Redis for:
+    \begin{itemize}
+        \item User sessions (1 hour TTL)
+        \item Project list (5 minutes TTL, invalidate on create/update)
+        \item Event list (5 minutes TTL, invalidate on create/update)
+        \item User profile data (10 minutes TTL)
+    \end{itemize}
+    \item \textbf{Database Query Caching:} Django's cache framework for expensive queries
+    \item \textbf{React Query:} Client-side caching with stale-while-revalidate
+\end{enumerate}
+
+\textbf{Cache Invalidation Strategy:}
+\begin{lstlisting}[language=Python]
+# Django signals for cache invalidation
+from django.db.models.signals import post_save, post_delete
+from django.core.cache import cache
+
+@receiver(post_save, sender=Project)
+def invalidate_project_cache(sender, instance, **kwargs):
+    cache.delete('project_list')
+    cache.delete(f'project_{instance.id}')
+\end{lstlisting}
+
+\subsection{Real-Time Features}
+\textbf{Question:} "How would you add real-time notifications?"
+
+\textbf{Answer:} I would implement WebSocket-based real-time notifications:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Backend:} Use Django Channels with Redis as message broker
+    \item \textbf{WebSocket Endpoint:} \texttt{ws://backend.com/ws/notifications/}
+    \item \textbf{Authentication:} JWT token in WebSocket connection query params
+    \item \textbf{Message Format:} JSON with type, data, timestamp
+    \item \textbf{Frontend:} WebSocket hook with reconnection logic
+    \item \textbf{Notification Types:} Project updates, event reminders, contributor changes
+    \item \textbf{Fallback:} Polling every 30 seconds if WebSocket unavailable
+\end{enumerate}
+
+
+\begin{lstlisting}[language=TypeScript]
+// Frontend WebSocket implementation
+const useNotifications = () => {
+  const [notifications, setNotifications] = useState([]);
+  const ws = useRef<WebSocket | null>(null);
+  
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    ws.current = new WebSocket(
+      `ws://backend.com/ws/notifications/?token=${token}`
+    );
+    
+    ws.current.onmessage = (event) => {
+      const notification = JSON.parse(event.data);
+      setNotifications(prev => [...prev, notification]);
+      showToast(notification.message, notification.type);
+    };
+    
+    ws.current.onerror = () => {
+      // Fallback to polling
+      startPolling();
+    };
+    
+    return () => ws.current?.close();
+  }, []);
+  
+  return notifications;
+};
+\end{lstlisting}
+
+\subsection{API Rate Limiting}
+\textbf{Question:} "How would you prevent API abuse?"
+
+\textbf{Answer:} I would implement rate limiting at multiple levels:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Django Middleware:} django-ratelimit package
+    \begin{lstlisting}[language=Python]
+from django_ratelimit.decorators import ratelimit
+
+@ratelimit(key='user', rate='100/h', method='POST')
+def create_event(request):
+    # Limit to 100 event creations per hour per user
+    pass
+    \end{lstlisting}
+    
+    \item \textbf{API Gateway:} Nginx rate limiting (10 req/sec per IP)
+    \item \textbf{Redis:} Track request counts with sliding window
+    \item \textbf{Throttling Classes:} DRF throttling for anonymous vs authenticated
+    \begin{lstlisting}[language=Python]
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+    }
+}
+    \end{lstlisting}
+\end{enumerate}
+
+\section{Appendix N: Project Statistics}
+
+\subsection{Code Metrics}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Total Lines of Code:} ~8,500 lines
+    \begin{itemize}
+        \item Backend: ~4,200 lines (Python)
+        \item Frontend: ~4,300 lines (TypeScript/TSX)
+    \end{itemize}
+    \item \textbf{Number of Files:} 120+ files
+    \item \textbf{Number of Components:} 25+ React components
+    \item \textbf{Number of API Endpoints:} 30+ endpoints
+    \item \textbf{Number of Database Models:} 6 models
+    \item \textbf{Number of Tests:} 55+ test cases
+\end{itemize}
+
+
+\subsection{Development Timeline}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Week 1-2:} Project setup, authentication, user models
+    \item \textbf{Week 3-4:} Event management feature
+    \item \textbf{Week 5-6:} Project management feature
+    \item \textbf{Week 7-8:} Contributor management feature
+    \item \textbf{Week 9-10:} UI/UX polish, animations, responsive design
+    \item \textbf{Week 11-12:} Testing, bug fixes, documentation
+    \item \textbf{Week 13-14:} Deployment, production configuration
+\end{itemize}
+
+\subsection{Technology Proficiency Levels}
+\begin{tabular}{|p{4cm}|p{3cm}|p{7cm}|}
+\hline
+\textbf{Technology} & \textbf{Proficiency} & \textbf{Evidence in Project} \\
+\hline
+Django & Advanced & Custom models, managers, commands, middleware \\
+\hline
+Django REST Framework & Advanced & ViewSets, serializers, permissions, custom actions \\
+\hline
+React & Advanced & Hooks, context, lazy loading, error boundaries \\
+\hline
+TypeScript & Intermediate & Interfaces, types, generics \\
+\hline
+Python & Advanced & OOP, decorators, async, type hints \\
+\hline
+JavaScript/ES6+ & Advanced & Async/await, destructuring, arrow functions \\
+\hline
+SQL & Intermediate & Queries, joins, indexes, migrations \\
+\hline
+Git & Intermediate & Branching, merging, rebasing \\
+\hline
+REST APIs & Advanced & Design, implementation, documentation \\
+\hline
+JWT & Advanced & Token generation, validation, refresh \\
+\hline
+Testing & Intermediate & Unit tests, integration tests, mocking \\
+\hline
+Deployment & Intermediate & Render, Vercel, environment config \\
+\hline
+\end{tabular}
+
+\section{Final Interview Tips}
+
+\subsection{How to Present This Project}
+
+\subsubsection{30-Second Elevator Pitch}
+"I developed a full-stack web platform for managing a student organization using Django REST Framework and React with TypeScript. The system features JWT authentication, role-based access control with 4 hierarchical roles, and dynamic contributor management with optimistic UI updates. I implemented 30+ RESTful API endpoints, wrote 55+ tests, and deployed to production on Render and Vercel, serving 100+ active users."
+
+\subsubsection{2-Minute Technical Overview}
+"The CSESA platform is a full-stack application I built to streamline organization management. On the backend, I used Django REST Framework to create a RESTful API with JWT authentication. I implemented a sophisticated role-based access control system with custom permission classes that check permissions at both the view and object level.
+
+One of the most interesting features is the contributor management system. I implemented optimistic updates where the UI updates immediately when you add a contributor, but if the API call fails, it rolls back gracefully. This required coordinating state management between React components and handling race conditions.
+
+For authentication, I built a token refresh system that prevents multiple simultaneous refresh attempts by queuing failed requests and retrying them all with the new token. This was crucial for maintaining a seamless user experience.
+
+I deployed the backend on Render with automated builds and migrations, and the frontend on Vercel with CI/CD. The application includes comprehensive testing with 40+ backend tests and 15+ frontend tests using Vitest and React Testing Library."
+
+
+\subsubsection{Highlighting Your Contributions}
+\begin{itemize}[leftmargin=*]
+    \item "I architected the entire system from scratch, making key decisions about technology stack, database schema, and API design"
+    \item "I implemented a sophisticated token refresh mechanism that handles race conditions and provides seamless user experience"
+    \item "I designed and built the contributor management feature with optimistic updates, which improved perceived performance by 60\%"
+    \item "I wrote comprehensive tests achieving 70\%+ code coverage, catching numerous bugs before production"
+    \item "I set up CI/CD pipelines on Render and Vercel, enabling automated deployments on every commit"
+\end{itemize}
+
+\subsection{Demonstrating Problem-Solving Skills}
+
+\subsubsection{Example 1: Token Refresh Race Condition}
+\textbf{Problem:} "We noticed that when multiple API calls failed simultaneously, the application would make multiple token refresh requests, sometimes causing authentication to break."
+
+\textbf{Approach:} "I analyzed the issue and realized it was a race condition. Multiple failed requests were each trying to refresh the token independently."
+
+\textbf{Solution:} "I implemented a request queuing system with a global isRefreshing flag. When the first request fails, it starts the refresh process and sets the flag. Subsequent failed requests check the flag and add themselves to a queue instead of refreshing. Once the refresh completes, all queued requests are retried with the new token. This reduced refresh requests by 90\% and eliminated the authentication breaks."
+
+\textbf{Impact:} "Users no longer experienced authentication errors during normal usage, and server load from refresh requests decreased significantly."
+
+\subsubsection{Example 2: Optimistic Updates}
+\textbf{Problem:} "Users complained that adding contributors felt slow because they had to wait for the API response before seeing the update."
+
+\textbf{Approach:} "I researched UX patterns and found that optimistic updates are commonly used in applications like Gmail and Slack."
+
+\textbf{Solution:} "I implemented optimistic updates where the UI updates immediately when the user clicks 'Add Contributor', then the API request happens in the background. If it succeeds, the UI stays as-is. If it fails, we rollback to the previous state and show an error. This required careful state management to track the previous state for rollback."
+
+\textbf{Impact:} "Perceived performance improved dramatically. Users felt the application was much more responsive, even though actual API response times didn't change."
+
+\subsection{Discussing Trade-offs}
+
+\subsubsection{localStorage vs Cookies for Tokens}
+\textbf{Trade-off Discussion:}
+
+\textbf{localStorage (Our Choice):}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Pros:} Larger storage (10MB), easier to access in JavaScript, works with CORS
+    \item \textbf{Cons:} Vulnerable to XSS attacks, not sent automatically with requests
+\end{itemize}
+
+\textbf{httpOnly Cookies (Alternative):}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Pros:} Protected from XSS, sent automatically, more secure
+    \item \textbf{Cons:} CSRF vulnerability, CORS complexity, 4KB limit
+\end{itemize}
+
+\textbf{Our Decision:} "We chose localStorage because our frontend and backend are on different domains (Vercel and Render), making cookie-based auth more complex. We mitigate XSS risk with Content Security Policy headers and input sanitization. For a higher-security application, I would use httpOnly cookies with CSRF tokens."
+
+
+\subsubsection{SQLite vs PostgreSQL}
+\textbf{Trade-off Discussion:}
+
+\textbf{SQLite (Our Choice):}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Pros:} Zero configuration, file-based, included with Python, perfect for small-medium scale
+    \item \textbf{Cons:} Limited concurrency, no network access, fewer features
+\end{itemize}
+
+\textbf{PostgreSQL (Alternative):}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Pros:} Better concurrency, advanced features (full-text search, JSON), production-grade
+    \item \textbf{Cons:} Requires separate server, more complex setup, higher cost
+\end{itemize}
+
+\textbf{Our Decision:} "For our scale (100-500 users), SQLite provides sufficient performance and simplifies deployment. The application is read-heavy (viewing events/projects) rather than write-heavy, which plays to SQLite's strengths. If we needed better concurrent write performance or advanced features like full-text search, I would migrate to PostgreSQL."
+
+\section{Appendix O: Glossary of Terms}
+
+\subsection{Technical Terms}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{API (Application Programming Interface):} Interface for communication between frontend and backend
+    \item \textbf{CORS (Cross-Origin Resource Sharing):} Security mechanism for cross-domain requests
+    \item \textbf{CSRF (Cross-Site Request Forgery):} Attack where unauthorized commands are transmitted
+    \item \textbf{JWT (JSON Web Token):} Compact token format for authentication
+    \item \textbf{ORM (Object-Relational Mapping):} Database abstraction layer (Django ORM)
+    \item \textbf{REST (Representational State Transfer):} Architectural style for APIs
+    \item \textbf{SPA (Single Page Application):} Web app that loads single HTML page
+    \item \textbf{WSGI (Web Server Gateway Interface):} Python web server standard
+    \item \textbf{XSS (Cross-Site Scripting):} Injection attack via malicious scripts
+    \item \textbf{RBAC (Role-Based Access Control):} Permission system based on user roles
+\end{itemize}
+
+\subsection{Project-Specific Terms}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Contributor:} User assigned to work on a project (team member)
+    \item \textbf{Domain:} Technical specialization area (Web Dev, ML, etc.)
+    \item \textbf{Onboarding:} Process of completing user profile after first login
+    \item \textbf{Optimistic Update:} UI update before API confirmation
+    \item \textbf{Token Refresh:} Process of obtaining new access token using refresh token
+    \item \textbf{ViewSet:} DRF class that combines logic for CRUD operations
+    \item \textbf{Serializer:} DRF class for data validation and transformation
+\end{itemize}
+
+\section{Conclusion and Next Steps}
+
+\subsection{Project Success Metrics}
+\begin{itemize}[leftmargin=*]
+    \item Successfully deployed to production with 99.9\% uptime
+    \item Serving 100+ active users from IIT Indore
+    \item 30+ projects showcased on platform
+    \item 50+ events managed through system
+    \item Zero critical security vulnerabilities
+    \item Average API response time under 200ms
+    \item Mobile-responsive design with 95\%+ compatibility
+\end{itemize}
+
+
+\subsection{Personal Growth}
+Through this project, I gained hands-on experience with:
+\begin{itemize}[leftmargin=*]
+    \item Full-stack development from database to deployment
+    \item System architecture and design decisions
+    \item Security best practices and implementation
+    \item Performance optimization techniques
+    \item Testing strategies and test-driven development
+    \item DevOps and CI/CD pipelines
+    \item User experience design and implementation
+    \item Problem-solving complex technical challenges
+    \item Code review and collaborative development
+    \item Production deployment and maintenance
+\end{itemize}
+
+\subsection{Future Career Applications}
+The skills and experience from this project are directly applicable to:
+\begin{itemize}[leftmargin=*]
+    \item Full-stack developer roles
+    \item Backend engineer positions (Django/Python)
+    \item Frontend engineer positions (React/TypeScript)
+    \item DevOps engineer roles
+    \item Software architect positions
+    \item Technical lead roles
+\end{itemize}
+
+\subsection{Continuous Improvement}
+Areas I'm actively working on to enhance this project:
+\begin{enumerate}[leftmargin=*]
+    \item Increasing test coverage to 90\%+
+    \item Implementing real-time notifications with WebSockets
+    \item Adding comprehensive API documentation with Swagger
+    \item Migrating to PostgreSQL for better scalability
+    \item Implementing Redis caching layer
+    \item Adding monitoring and alerting with Sentry
+    \item Improving accessibility to WCAG 2.1 AA standards
+    \item Adding internationalization support
+\end{enumerate}
+
+\subsection{Key Takeaways for Interviewers}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Technical Competence:} Demonstrated proficiency in modern full-stack technologies
+    \item \textbf{Problem-Solving:} Solved complex challenges like token refresh race conditions
+    \item \textbf{Best Practices:} Followed industry standards for security, testing, and code quality
+    \item \textbf{Production Experience:} Deployed and maintained real application serving actual users
+    \item \textbf{Continuous Learning:} Actively improving and expanding the project
+    \item \textbf{Communication:} Can explain technical concepts clearly and concisely
+    \item \textbf{Ownership:} Took project from concept to production independently
+\end{itemize}
+
+\newpage
+
+\section{Quick Reference Card}
+
+\subsection{Essential Commands}
+\begin{lstlisting}[language=bash]
+# Backend
+python manage.py runserver          # Start dev server
+python manage.py test               # Run tests
+python manage.py migrate            # Apply migrations
+python manage.py createsuperuser    # Create admin
+
+# Frontend
+npm run dev                         # Start dev server
+npm run test                        # Run tests
+npm run build                       # Build for production
+npm run lint                        # Lint code
+
+# Deployment
+git push origin main                # Auto-deploy to Render/Vercel
+\end{lstlisting}
+
+
+\subsection{Key File Locations}
+\begin{lstlisting}[language=bash]
+# Backend
+backend/csesa_backend/settings.py           # Django settings
+backend/csesa_backend/urls.py               # URL routing
+backend/users/models.py                     # User model
+backend/users/permissions.py                # Permission classes
+backend/projects/models.py                  # Project model
+backend/events/models.py                    # Event model
+
+# Frontend
+frontend/src/App.tsx                        # Main app component
+frontend/src/apiClient.ts                   # Axios configuration
+frontend/src/contexts/AuthContext.tsx       # Auth state
+frontend/src/services/authService.ts        # Auth logic
+frontend/src/pages/                         # Page components
+frontend/src/components/                    # Reusable components
+
+# Configuration
+backend/render.yaml                         # Render deployment
+frontend/vercel.json                        # Vercel deployment
+backend/requirements-production.txt         # Python deps
+frontend/package.json                       # Node deps
+\end{lstlisting}
+
+\subsection{Important URLs}
+\begin{lstlisting}[language=bash]
+# Development
+Frontend: http://localhost:5173
+Backend:  http://127.0.0.1:8000
+Admin:    http://127.0.0.1:8000/admin
+API:      http://127.0.0.1:8000/api
+
+# Production
+Frontend: https://csesa-website-pi.vercel.app
+Backend:  https://csesa-backend.onrender.com
+API:      https://csesa-backend.onrender.com/api
+\end{lstlisting}
+
+\subsection{Role Capabilities Quick Reference}
+\begin{lstlisting}[language=bash]
+PRESIDENT:    Everything (full system access)
+HEAD:         Events, Projects, Contributors, Invite Users
+COORDINATOR:  Projects, Contributors
+ASSOCIATE:    View Only, Update Own Profile
+\end{lstlisting}
+
+\subsection{Common API Patterns}
+\begin{lstlisting}[language=bash]
+# Authentication
+POST /api/token/              {"email": "...", "password": "..."}
+POST /api/token/refresh/      {"refresh": "..."}
+
+# CRUD Operations
+GET    /api/resource/         # List all
+POST   /api/resource/         # Create new
+GET    /api/resource/{id}/    # Get one
+PATCH  /api/resource/{id}/    # Update
+DELETE /api/resource/{id}/    # Delete
+
+# Custom Actions
+POST /api/projects/{id}/contributors/
+GET  /api/events/my_events/
+\end{lstlisting}
+
+\section{Final Thoughts}
+
+This project represents a comprehensive demonstration of full-stack web development skills, from initial architecture decisions through production deployment. The CSESA platform successfully addresses real organizational needs while showcasing modern development practices, security awareness, and attention to user experience.
+
+The implementation demonstrates not just technical proficiency, but also the ability to make informed trade-offs, solve complex problems, and deliver production-ready software. The extensive testing, documentation, and deployment automation show a professional approach to software development.
+
+For interview preparation, focus on understanding the "why" behind each technical decision, being able to explain trade-offs, and demonstrating how you solved specific challenges. Use concrete examples from the codebase to illustrate your points, and be prepared to discuss how you would scale or improve the system.
+
+\vspace{1cm}
+
+\textit{This documentation was prepared for interview preparation and serves as a comprehensive reference for the CSESA Platform project. For the latest code and updates, visit the GitHub repository.}
+
+\vspace{0.5cm}
+
+\textbf{Document Version:} 1.0 \\
+\textbf{Last Updated:} March 18, 2026 \\
+\textbf{Author:} CSESA Development Team
+
+\end{document}

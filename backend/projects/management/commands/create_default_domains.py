@@ -8,7 +8,7 @@ class Command(BaseCommand):
         default_domains = [
             {'id': 1, 'name': 'General'},
             {'id': 2, 'name': 'Web Development'},
-            {'id': 3, 'name': 'Mobile Development'},
+            {'id': 3, 'name': 'Systems Programming'},
             {'id': 4, 'name': 'Data Science'},
             {'id': 5, 'name': 'Machine Learning'},
         ]

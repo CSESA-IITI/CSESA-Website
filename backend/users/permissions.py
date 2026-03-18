@@ -9,7 +9,6 @@ class IsOrganizationMember(BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
         
-        # Check if user's email domain matches the allowed organization domain
         user_email = request.user.email
         if not user_email:
             return False

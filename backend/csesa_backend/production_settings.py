@@ -19,7 +19,7 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://csesa-website-pi.vercel.a
 
 CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL,
-    'http://localhost:5173',  # Keep for local development
+    'http://localhost:5173',  
     'http://localhost:5174',
 ]
 
