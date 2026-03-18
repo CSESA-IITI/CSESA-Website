@@ -35,6 +35,7 @@ const Team = () => {
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
+        // This endpoint now allows unauthenticated access
         const response = await authService.getAllUsers();
         const sortedMembers = sortMembersByRole(response.data);
         setTeamMembers(sortedMembers);

@@ -56,11 +56,11 @@ class UserManagementViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         """
         Instantiates and returns the list of permissions that this view requires.
-        - Authenticated users can list and retrieve.
+        - Anyone can list and retrieve (for public team page).
         - Only Presidents can create, update, or delete users.
         """
         if self.action in ['list', 'retrieve']:
-            permission_classes = [permissions.IsAuthenticated]
+            permission_classes = [permissions.AllowAny]
         else:
             permission_classes = [IsPresident]
         return [permission() for permission in permission_classes]

@@ -31,8 +31,19 @@ const Events: React.FC = () => {
       let fetchedEvents: Event[];
       
       if (filter === 'my') {
+        // My events requires authentication
+        if (!isAuthenticated) {
+          addToast({
+            type: 'error',
+            title: 'Authentication Required',
+            message: 'Please log in to view your events.'
+          });
+          setActiveFilter('all');
+          return;
+        }
         fetchedEvents = await eventService.getMyEvents();
       } else {
+        // All events is now public - no authentication required
         fetchedEvents = await eventService.getAllEvents();
       }
       

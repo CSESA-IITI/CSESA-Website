@@ -2,7 +2,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Event
 from .serializers import EventSerializer
 from users.permissions import CanManageEvents
@@ -10,7 +10,15 @@ from users.permissions import CanManageEvents
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    permission_classes = [CanManageEvents]
+    
+    def get_permissions(self):
+        """
+        Allow unauthenticated read access (list, retrieve).
+        Require authentication and permissions for write operations.
+        """
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [CanManageEvents()]
 
     def perform_create(self, serializer):
         """Set the created_by field to the current user when creating an event"""
