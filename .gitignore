@@ -1,3 +1,15 @@
 .kiro
 .vscode
 *.tex
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+.pytest_cache/
+venv/
+.venv/
+env/
+csesaenv/
+node_modules/
+dist/
