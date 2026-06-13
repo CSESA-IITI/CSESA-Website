@@ -18,7 +18,7 @@ const LazyLogin = lazy(() => import("./pages/Login"));
 const LazyProfile = lazy(() => import("./pages/Profile"));
 const LazyNotFound = lazy(() => import("./pages/NotFound"));
 
-import { HashRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
 import "./App.css";
