@@ -79,17 +79,32 @@ const Home = () => {
         />
         <motion.div className="absolute bottom-30 w-400 h-800 rounded-full backdrop-blur-md" />
 
-        <div className="z-20 text-white text-center border rounded ">
+        <motion.div 
+          className="z-20 text-white text-center border rounded "
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
           {" "}
           <div className="p-4 ">
-            <h1 className="p-4 border rounded text-4xl md:text-6xl font-extrabold mb-4 leading-tight vamos tracking-widest ">
+            <motion.h1 
+              className="p-4 border rounded text-4xl md:text-6xl font-extrabold mb-4 leading-tight vamos tracking-widest "
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            >
               {`< CSESA />`}
-            </h1>
-            <p className="border rounded text-md md:text-xl mt-4 text-gray-300 max-w-2xl mx-auto alegreya-sans-sc-regular ">
+            </motion.h1>
+            <motion.p 
+              className="border rounded text-md md:text-xl mt-4 text-gray-300 max-w-2xl mx-auto alegreya-sans-sc-regular "
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+            >
               Computer Science Engineering Students Association
-            </p>
+            </motion.p>
           </div>
-        </div>
+        </motion.div>
       </section>
       
       {/* Gallery Section */}
