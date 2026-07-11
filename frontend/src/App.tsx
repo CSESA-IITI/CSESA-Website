@@ -22,16 +22,30 @@ import { HashRouter as Router, Route, Routes } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
 import "./App.css";
+import apiClient from "./apiClient";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500); // 
+    const startTime = Date.now();
+    const minLoadTime = 1500;
 
-    return () => clearTimeout(timer);
+    const wakeUpServer = async () => {
+      try {
+        await apiClient.get('/events/');
+      } catch (error) {
+        console.error("Failed to wake up server:", error);
+      } finally {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, minLoadTime - elapsed);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, remaining);
+      }
+    };
+
+    wakeUpServer();
   }, []);
 
   return (

@@ -9,13 +9,13 @@ from .serializers import ContactMessageSerializer
 class ContactMessageCreateView(generics.CreateAPIView):
     queryset = ContactMessage.objects.all()
     serializer_class = ContactMessageSerializer
-    permission_classes = [AllowAny]  # Allow anyone to submit contact form
+    permission_classes = [AllowAny]  
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        # Save the message to database
+        
         contact_message = serializer.save()
         
         # Send email notification to CSESA
@@ -37,7 +37,7 @@ This message was sent through the CSESA website contact form.
 You can reply directly to {contact_message.email}
             """
             
-            # Send email to CSESA
+            
             send_mail(
                 subject=subject,
                 message=message_body,
@@ -45,8 +45,6 @@ You can reply directly to {contact_message.email}
                 recipient_list=[settings.CONTACT_EMAIL],
                 fail_silently=False,
             )
-            
-            # Send confirmation email to sender
             confirmation_subject = "Thank you for contacting CSESA"
             confirmation_message = f"""
 Dear {contact_message.name},
