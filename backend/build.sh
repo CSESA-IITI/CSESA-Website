@@ -4,14 +4,10 @@ set -o errexit
 
 pip install -r requirements.txt
 
+# Create static directory if it doesn't exist to prevent warnings
+mkdir -p static
+
 python manage.py collectstatic --no-input
-python manage.py migrate
-
-# Create superuser if environment variables are set
-python manage.py create_superuser
-
-# Create default domain
-python manage.py create_default_domain
 
 # Make start script executable
 chmod +x start.sh

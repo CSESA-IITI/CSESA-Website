@@ -10,11 +10,10 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '.onrender.com',  # Allow all Render subdomains
+    '.onrender.com',  
 ]
 
-# CORS settings for production - Update with your Vercel domain
-# CORS settings for production - configurable via environment variables
+
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://csesa-website-pi.vercel.app')
 
 CORS_ALLOWED_ORIGINS = [
@@ -27,7 +26,6 @@ CORS_ORIGIN_WHITELIST = [
     FRONTEND_URL,
 ]
 
-# Allow all origins if CORS_ALLOW_ALL is set to 'true'
 CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL', 'false').lower() == 'true'
 
 CORS_ALLOW_CREDENTIALS = True
