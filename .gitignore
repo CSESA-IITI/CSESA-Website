@@ -1,3 +1,9 @@
 .kiro
 .vscode
 *.tex
+*.py[cod]
+__pycache__/
+.env
+node_modules/
+dist/
+uploads/

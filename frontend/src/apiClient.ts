@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+// Production uses CloudPanel/Nginx to proxy this path to the local Node API.
+// Keep the explicit local default so existing frontend development remains simple.
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:8000/api' : '/api');
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
+  baseURL: apiBaseUrl,
 });
 
 let isRefreshing = false;
@@ -63,7 +67,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'}/token/refresh/`, {
+        const response = await axios.post(`${apiBaseUrl}/token/refresh/`, {
           refresh: refreshToken
         });
 
