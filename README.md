@@ -1,83 +1,98 @@
 # CSESA Website
 
-Welcome to the official repository for the **Computer Science and Engineering Students Association (CSESA)** website. 
+The official website of the Computer Science and Engineering Students Association (CSESA), IIT Indore. It showcases the team, events, projects, and provides member authentication and a contact form.
 
-This platform serves as the digital hub for CSESA, showcasing our events, projects, team members, and providing a gateway for students to connect and collaborate.
+## Stack
 
-## 🚀 Features
+- Frontend: React, TypeScript, Vite, Tailwind CSS
+- API: Node.js, TypeScript, Express
+- Database: MySQL
+- Authentication: JWT access and rotating refresh tokens
 
-- **Dynamic Landing Page**: Engaging animations using Framer Motion and Three.js.
-- **Events & Projects Showcase**: Detailed listings of past and upcoming events, as well as ongoing technical projects.
-- **Team Directory**: Profiles of the core team members and contributors.
-- **Authentication System**: Secure login and profile management with JWT authentication.
-- **Contact Us**: Built-in messaging system to reach out to the organization.
-- **Smart Loading State**: Intelligent loading screens that adapt to the backend server's response time (especially useful for cold starts on free hosting tiers).
+The active API lives in [`backend-node`](./backend-node). The legacy Django code remains in `backend/` for historical reference and is not used by the current application.
 
-## 💻 Tech Stack
+## Local development
 
-### Frontend
-- **Framework**: React 19 with Vite
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **Animations**: Framer Motion, GSAP, Three.js
-- **Routing**: React Router v7
+### Prerequisites
 
-### Backend
-- **Framework**: Django & Django REST Framework (DRF)
-- **Language**: Python
-- **Database**: SQLite (Development) / PostgreSQL (Production ready)
-- **Authentication**: djangorestframework-simplejwt
-
-## 🛠️ Local Development Setup
-
-To run this project locally, you will need Node.js and Python installed on your machine.
+- Node.js 22 or later
+- MySQL 8 or compatible MariaDB server
+- Git
 
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/CSESA-IITI/CSESA-Website.git
 cd CSESA-Website
 ```
 
-### 2. Backend Setup
-Navigate to the backend directory and set up the Python environment:
+### 2. Set up MySQL and the API
+
+Create an empty local MySQL database and a user with full access to that database. Then configure the API:
+
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run migrations
-python manage.py migrate
-
-# Start the development server
-python manage.py runserver
+cd backend-node
+cp .env.example .env
 ```
-The backend API will run on `http://127.0.0.1:8000/`.
 
-### 3. Frontend Setup
-Open a new terminal window, navigate to the frontend directory:
+Edit `.env` with local, non-production values. At minimum, set `NODE_ENV=development`, your MySQL connection details, and a unique `JWT_SECRET`.
+
+Load the variables and initialise the schema:
+
 ```bash
-cd frontend
+set -a
+source .env
+set +a
+mysql -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p "$DB_NAME" < schema.sql
+```
 
-# Install dependencies
-npm install
+Install dependencies and start the development API:
 
-# Start the development server
+```bash
+npm ci --include=dev
 npm run dev
 ```
-The frontend application will be available at `http://localhost:5173/`.
 
-## ☁️ Deployment
+The API listens on `http://127.0.0.1:3000`.
 
-- **Frontend**: Designed to be easily deployed on Vercel or Netlify.
-- **Backend**: Pre-configured for deployment on Render. Includes a `render.yaml` for infrastructure as code, and handles cold-starts gracefully on the frontend.
+To use management features locally, create an initial president account after building the API:
 
-## 🤝 Contributing
+```bash
+npm run build
+npm run create-president -- your-email@example.com 'a-long-unique-password'
+```
 
-Contributions are always welcome! Please feel free to open a pull request or submit an issue if you find any bugs or have feature requests.
+There is intentionally no public registration endpoint.
+
+### 3. Start the frontend
+
+In a second terminal:
+
+```bash
+cd frontend
+npm ci --include=dev
+npm run dev
+```
+
+Vite serves the site at `http://localhost:5173`. In development, it connects to the local API at `http://127.0.0.1:3000/api` by default. Set `VITE_API_BASE_URL` in `frontend/.env.local` only when you need to target a different API.
+
+### 4. Verify builds
+
+Before opening a pull request, run:
+
+```bash
+cd backend-node && npm run check && npm run build
+cd ../frontend && npm run build
+```
+
+## Contributing
+
+Please keep secrets, local `.env` files, generated build files, and database dumps out of Git. Open a pull request with a focused description of the change and any relevant verification steps.
+
+## Maintainers
+
+Deployment, CloudPanel configuration, production credentials, database administration, process supervision, and recovery procedures are maintained in the CSESA internal documentation. Refer to those internal docs before making production changes; do not add operational secrets to this repository.
 
 ---
 
-*Developed with ❤️ by the CSESA Team.*
+Developed by the CSESA Team.

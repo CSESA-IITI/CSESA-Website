@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 // Production uses CloudPanel/Nginx to proxy this path to the local Node API.
-// Keep the explicit local default so existing frontend development remains simple.
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:8000/api' : '/api');
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:3000/api' : '/api');
 
 const apiClient = axios.create({
   baseURL: apiBaseUrl,
