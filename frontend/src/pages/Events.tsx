@@ -301,6 +301,9 @@ const Events: React.FC = () => {
                     )}
                     
                     <div className="mb-4">
+                      {event.image_url && (
+                        <img src={event.image_url} alt="" className="mb-4 h-44 w-full rounded-lg object-cover" />
+                      )}
                       <h3 className="text-xl font-semibold mb-2 text-white vamos pr-16">
                         {event.title}
                       </h3>

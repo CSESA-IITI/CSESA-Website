@@ -127,12 +127,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
     setContributors(updatedContributors);
   };
 
-  const canEdit = user && (
-    user.role === 'PRESIDENT' || 
-    user.role === 'HEAD' || 
-    user.role === 'COORDINATOR' ||
-    (project.name && user.id === project.name.toString())
-  );
+  const canEdit = user?.is_admin;
 
   if (!isOpen || !canEdit) return null;
 

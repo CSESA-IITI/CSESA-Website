@@ -55,11 +55,11 @@ npm run dev
 
 The API listens on `http://127.0.0.1:3000`.
 
-To use management features locally, create an initial president account after building the API:
+To use management features locally, create the hidden CSESA admin account after building the API:
 
 ```bash
 npm run build
-npm run create-president -- your-email@example.com 'a-long-unique-password'
+npm run create-admin -- csesa@iiti.ac.in 'a-long-unique-password'
 ```
 
 There is intentionally no public registration endpoint.

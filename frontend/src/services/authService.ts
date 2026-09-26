@@ -6,6 +6,7 @@ export interface User {
   first_name: string;
   last_name: string;
   role: string;
+  role_title?: string;
   domain: string;
   year: string;
   bio: string;
@@ -14,6 +15,7 @@ export interface User {
   github_link: string;
   linkedin_link: string;
   is_onboarded: boolean;
+  is_admin?: boolean;
 }
 
 export interface AuthResponse {
@@ -85,6 +87,7 @@ class AuthService {
     email: string;
     password: string;
     role: string;
+    role_title?: string;
     domain: string;
     year: string;
   }): Promise<User> {

@@ -1,61 +1,18 @@
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import "./Home.css";
 import About from "./About";
 import CircularGallery from "../components/ui/CircularGallery";
+import eventService from "../services/eventService";
 
 const Home = () => {
-  const eventGalleryItems = [
-    {
-      image:
-        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop",
-      text: "TechFest 2024",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&h=600&fit=crop",
-      text: "Hackathon Supreme",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&h=600&fit=crop",
-      text: "AI Workshop",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800&h=600&fit=crop",
-      text: "Code Sprint",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=600&fit=crop",
-      text: "Web Dev Bootcamp",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop",
-      text: "Tech Talk Series",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=600&fit=crop",
-      text: "Innovation Summit",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1515378791036-0648a814c963?w=800&h=600&fit=crop",
-      text: "Coding Competition",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop",
-      text: "Project Showcase",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=600&fit=crop",
-      text: "Alumni Meetup",
-    },
-  ];
+  const [eventGalleryItems, setEventGalleryItems] = useState<{ image: string; text: string }[]>([]);
+
+  useEffect(() => {
+    eventService.getAllEvents()
+      .then(events => setEventGalleryItems(events.filter(event => event.image_url).map(event => ({ image: event.image_url!, text: event.title }))))
+      .catch(() => setEventGalleryItems([]));
+  }, []);
 
   return (
     <motion.div>
@@ -128,28 +85,16 @@ const Home = () => {
             </p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="h-[600px] w-full"
-          >
-            <CircularGallery
-              items={eventGalleryItems}
-              bend={2}
-              textColor="#60a5fa"
-              borderRadius={0.08}
-              font="bold 24px 'Figtree', sans-serif"
-              scrollSpeed={2.5}
-              scrollEase={0.08}
-            />
-          </motion.div>
-
-          <p className="text-center text-xs text-gray-500 font-mono mt-8">
-            Scroll or drag to explore — {eventGalleryItems.length} events
-            captured
-          </p>
+          {eventGalleryItems.length > 0 ? (
+            <>
+              <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="h-[600px] w-full">
+                <CircularGallery items={eventGalleryItems} bend={2} textColor="#60a5fa" borderRadius={0.08} font="bold 24px 'Figtree', sans-serif" scrollSpeed={2.5} scrollEase={0.08} />
+              </motion.div>
+              <p className="text-center text-xs text-gray-500 font-mono mt-8">Scroll or drag to explore — {eventGalleryItems.length} events captured</p>
+            </>
+          ) : (
+            <div className="flex h-64 items-center justify-center rounded-2xl border border-dashed border-white/15 text-center text-gray-400">Event photos will appear here once they are uploaded.</div>
+          )}
         </div>
       </section>
 

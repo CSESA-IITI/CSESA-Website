@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "check": "tsc --noEmit",
+    "create-admin": "node dist/create-president.js",
     "create-president": "node dist/create-president.js"
   },
   "dependencies": {

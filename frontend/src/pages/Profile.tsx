@@ -58,7 +58,7 @@ const Profile: React.FC = () => {
     loadSkills();
   }, []);
 
-  const canCreateUsers = user?.role === "PRESIDENT" || user?.role === "HEAD";
+  const canCreateUsers = user?.is_admin;
 
   const handleChange = (
     e: React.ChangeEvent<

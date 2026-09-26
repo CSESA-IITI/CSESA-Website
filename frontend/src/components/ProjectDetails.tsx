@@ -52,12 +52,7 @@ const ProjectDetails = ({ project, onClose, onProjectUpdated }: ProjectDetailsPr
     }
   };
 
-  const canEditProject = user && (
-    user.role === 'PRESIDENT' || 
-    user.role === 'HEAD' || 
-    user.role === 'COORDINATOR' ||
-    (currentProject.name && user.id === currentProject.name.toString())
-  );
+  const canEditProject = user?.is_admin;
 
   const handleProjectUpdate = (updatedProject: Project) => {
     setCurrentProject(updatedProject);

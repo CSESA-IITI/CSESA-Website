@@ -8,6 +8,7 @@ export interface Event {
   description: string;
   date: string; // ISO datetime string
   location: string;
+  image_url: string | null;
   created_by: User;
   can_edit: boolean;
   can_delete: boolean;
@@ -113,8 +114,12 @@ class EventService {
   /**
    * Create a new event
    */
-  async createEvent(eventData: CreateEventData): Promise<Event> {
+  async createEvent(eventData: CreateEventData | FormData): Promise<Event> {
     try {
+      if (eventData instanceof FormData) {
+        const response = await apiClient.post('/events/', eventData);
+        return response.data;
+      }
       // Validate required fields
       if (!eventData.title?.trim()) {
         throw new EventAPIError('Event title is required');
@@ -127,12 +132,6 @@ class EventService {
       }
       if (!eventData.location?.trim()) {
         throw new EventAPIError('Event location is required');
-      }
-
-      // Validate date is in the future
-      const eventDate = new Date(eventData.date);
-      if (eventDate <= new Date()) {
-        throw new EventAPIError('Event date must be in the future');
       }
 
       const response = await apiClient.post('/events/', eventData);
@@ -148,16 +147,12 @@ class EventService {
   /**
    * Update an existing event
    */
-  async updateEvent(eventId: number, eventData: UpdateEventData): Promise<Event> {
+  async updateEvent(eventId: number, eventData: UpdateEventData | FormData): Promise<Event> {
     try {
-      // Validate date if provided
-      if (eventData.date) {
-        const eventDate = new Date(eventData.date);
-        if (eventDate <= new Date()) {
-          throw new EventAPIError('Event date must be in the future');
-        }
+      if (eventData instanceof FormData) {
+        const response = await apiClient.patch(`/events/${eventId}/`, eventData);
+        return response.data;
       }
-
       // Validate non-empty strings if provided
       if (eventData.title !== undefined && !eventData.title.trim()) {
         throw new EventAPIError('Event title cannot be empty');
@@ -192,24 +187,20 @@ class EventService {
 
   /**
    * Check if current user can create events
-   * Based on role (PRESIDENT or HEAD)
+   * Content management is reserved for the shared CSESA admin account.
    */
   canCreateEvents(user: User | null): boolean {
     if (!user) return false;
-    return user.role === 'PRESIDENT' || user.role === 'HEAD';
+    return Boolean(user.is_admin);
   }
 
   /**
    * Check if current user can manage a specific event
    */
-  canManageEvent(event: Event, user: User | null): boolean {
+  canManageEvent(_event: Event, user: User | null): boolean {
     if (!user) return false;
     
-    // Event creator can manage
-    if (event.created_by.id === user.id) return true;
-    
-    // Presidents and heads can manage all events
-    return user.role === 'PRESIDENT' || user.role === 'HEAD';
+    return Boolean(user.is_admin);
   }
 
   /**

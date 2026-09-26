@@ -10,10 +10,11 @@ const Team = () => {
 
   const roleHierarchy = {
     'president': 1,
-    'head': 2,
-    'coordinator': 3,
-    'associate': 4,
-    'member': 5
+    'vice_president': 2,
+    'head': 3,
+    'coordinator': 4,
+    'associate': 5,
+    'member': 6
   };
 
   const sortMembersByRole = (members: User[]) => {
@@ -221,7 +222,7 @@ const Team = () => {
                           ? 'bg-gradient-to-r from-blue-500/20 to-blue-600/20 border border-blue-400/30 text-blue-300'
                           : 'bg-gradient-to-r from-green-500/20 to-green-600/20 border border-green-400/30 text-green-300'
                       }`}>
-                        {member.role.replace(/_/g, ' ').toUpperCase()}
+                        {(member.role_title || member.role.replace(/_/g, ' ')).toUpperCase()}
                       </span>
                     </div>
                     {member.domain && (
@@ -318,7 +319,7 @@ const Team = () => {
                         ? 'bg-gradient-to-r from-blue-500/20 to-blue-600/20 border border-blue-400/30 text-blue-300'
                         : 'bg-gradient-to-r from-green-500/20 to-green-600/20 border border-green-400/30 text-green-300'
                     }`}>
-                      {selectedMember.role.replace(/_/g, ' ').toUpperCase()}
+                      {(selectedMember.role_title || selectedMember.role.replace(/_/g, ' ')).toUpperCase()}
                     </span>
                   </div>
                   {selectedMember.domain && (

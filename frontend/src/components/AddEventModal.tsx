@@ -18,6 +18,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose, onEventA
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
+  const [image, setImage] = useState<File | null>(null);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,13 +45,6 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose, onEventA
       newErrors.location = 'Location is required';
     }
 
-    if (date && time) {
-      const eventDateTime = new Date(`${date}T${time}`);
-      if (eventDateTime <= new Date()) {
-        newErrors.date = 'Event date must be in the future';
-      }
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -67,12 +61,12 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose, onEventA
     try {
       const dateTime = new Date(`${date}T${time}`).toISOString();
       
-      const eventData = {
-        title: title.trim(),
-        description: description.trim(),
-        date: dateTime,
-        location: location.trim()
-      };
+      const eventData = new FormData();
+      eventData.append('title', title.trim());
+      eventData.append('description', description.trim());
+      eventData.append('date', dateTime);
+      eventData.append('location', location.trim());
+      if (image) eventData.append('image', image);
 
       const newEvent = await eventService.createEvent(eventData);
       onEventAdded(newEvent);
@@ -88,6 +82,7 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose, onEventA
       setDate('');
       setTime('');
       setLocation('');
+      setImage(null);
       setErrors({});
       
       onClose();
@@ -249,6 +244,12 @@ const AddEventModal: React.FC<AddEventModalProps> = ({ isOpen, onClose, onEventA
               {errors.location && (
                 <p className="mt-1 text-sm text-red-400">{errors.location}</p>
               )}
+            </div>
+
+            <div>
+              <label htmlFor="event-image" className="block text-white mb-2 font-medium">Event image</label>
+              <input id="event-image" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setImage(e.target.files?.[0] || null)} className="block w-full text-sm text-gray-300 file:mr-4 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white hover:file:bg-blue-500" />
+              <p className="mt-1 text-xs text-gray-500">JPEG, PNG, or WebP; maximum 3 MB.</p>
             </div>
 
 

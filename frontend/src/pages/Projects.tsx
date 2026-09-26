@@ -94,7 +94,7 @@ const Projects = () => {
 
 
         <div className="flex justify-center mb-12">
-          {isAuthenticated && (user?.role === 'PRESIDENT' || user?.role === 'HEAD') && (
+          {isAuthenticated && user?.is_admin && (
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

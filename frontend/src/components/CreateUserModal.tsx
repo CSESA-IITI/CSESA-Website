@@ -17,6 +17,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose }) =>
     password: '',
     confirmPassword: '',
     role: 'COORDINATOR',
+    role_title: '',
     domain: '',
     year: ''
   });
@@ -25,6 +26,8 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose }) =>
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const roleOptions = [
+    { value: 'PRESIDENT', label: 'President' },
+    { value: 'VICE_PRESIDENT', label: 'Vice President' },
     { value: 'HEAD', label: 'Head' },
     { value: 'COORDINATOR', label: 'Coordinator' },
     { value: 'ASSOCIATE', label: 'Associate' }
@@ -73,9 +76,8 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose }) =>
     if (!formData.role) {
       newErrors.role = 'Role is required';
     }
-
-    if (!formData.domain) {
-      newErrors.domain = 'Domain is required';
+    if (formData.role === 'HEAD' && !formData.role_title.trim()) {
+      newErrors.role_title = 'Specify this head’s public role title';
     }
 
     if (!formData.year) {
@@ -100,6 +102,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose }) =>
         email: formData.email.trim(),
         password: formData.password,
         role: formData.role,
+        role_title: formData.role_title.trim(),
         domain: formData.domain,
         year: formData.year
       };
@@ -117,6 +120,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose }) =>
         password: '',
         confirmPassword: '',
         role: 'COORDINATOR',
+        role_title: '',
         domain: '',
         year: ''
       });
@@ -167,6 +171,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose }) =>
         password: '',
         confirmPassword: '',
         role: 'COORDINATOR',
+        role_title: '',
         domain: '',
         year: ''
       });
@@ -259,9 +264,19 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose }) =>
                   )}
                 </div>
 
+                {formData.role === 'HEAD' && (
+                  <div>
+                    <label htmlFor="create_role_title" className="block text-white mb-2 font-medium">
+                      Public role title <span className="text-red-400">*</span>
+                    </label>
+                    <input type="text" id="create_role_title" name="role_title" value={formData.role_title} onChange={handleChange} placeholder="e.g., Events Head or Tech Lead — AI/ML" className={`w-full p-3 rounded-lg bg-gray-800 text-white border ${errors.role_title ? 'border-red-500' : 'border-gray-700'} focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none`} />
+                    {errors.role_title && <p className="mt-1 text-sm text-red-400">{errors.role_title}</p>}
+                  </div>
+                )}
+
                 <div>
                   <label htmlFor="create_domain" className="block text-white mb-2 font-medium">
-                    Domain <span className="text-red-400">*</span>
+                    Domain
                   </label>
                   <select
                     id="create_domain"
@@ -279,9 +294,6 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose }) =>
                       </option>
                     ))}
                   </select>
-                  {errors.domain && (
-                    <p className="mt-1 text-sm text-red-400">{errors.domain}</p>
-                  )}
                 </div>
 
                 <div>
