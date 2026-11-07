@@ -1,3 +1,7 @@
+-- DESTRUCTIVE RESET: sourcing this file removes all existing application data.
+CREATE DATABASE IF NOT EXISTS csesa;
+USE csesa;
+DROP TABLE IF EXISTS project_domains, project_members, user_skills, refresh_tokens, events, projects, contact_messages, skills, domains, users;
 CREATE TABLE users (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(254) NOT NULL UNIQUE,
@@ -10,8 +14,14 @@ CREATE TABLE users (
   is_public BOOLEAN NOT NULL DEFAULT TRUE,
   domain VARCHAR(50) NOT NULL DEFAULT '',
   graduation_year VARCHAR(4) NOT NULL DEFAULT '',
+  academic_year TINYINT UNSIGNED NULL,
+  all_domains JSON NULL,
+  department VARCHAR(150) NOT NULL DEFAULT '',
+  personal_email VARCHAR(254) NOT NULL DEFAULT '',
+  phone VARCHAR(32) NOT NULL DEFAULT '',
+  instagram_link VARCHAR(2048) NOT NULL DEFAULT '',
   bio TEXT NULL,
-  image_path VARCHAR(255) NULL,
+  image_path VARCHAR(2048) NULL,
   github_link VARCHAR(2048) NOT NULL DEFAULT '',
   linkedin_link VARCHAR(2048) NOT NULL DEFAULT '',
   is_onboarded BOOLEAN NOT NULL DEFAULT FALSE,
@@ -51,6 +61,7 @@ CREATE TABLE events (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX(date), FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE refresh_tokens (id CHAR(36) NOT NULL PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
   expires_at DATETIME NOT NULL, revoked_at DATETIME NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, INDEX(user_id, expires_at)) ENGINE=InnoDB;

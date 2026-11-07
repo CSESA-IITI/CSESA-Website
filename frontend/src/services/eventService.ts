@@ -67,17 +67,21 @@ const handleAPIError = (error: unknown): never => {
  * Includes filtering methods and proper error handling
  */
 class EventService {
+  private parseEventList(data: unknown): Event[] {
+    if (Array.isArray(data)) return data;
+    if (data !== null && typeof data === 'object' && 'results' in data && Array.isArray(data.results)) {
+      return data.results;
+    }
+    throw new EventAPIError('Invalid events response. Expected an event list. Check that VITE_API_BASE_URL points to the backend API.');
+  }
+
   /**
    * Get all events with optional pagination
    */
   async getAllEvents(): Promise<Event[]> {
     try {
       const response = await apiClient.get('/events/');
-      // Handle both paginated and non-paginated responses
-      if (response.data.results) {
-        return response.data.results;
-      }
-      return response.data;
+      return this.parseEventList(response.data);
     } catch (error) {
       return handleAPIError(error);
     }
@@ -89,11 +93,7 @@ class EventService {
   async getMyEvents(): Promise<Event[]> {
     try {
       const response = await apiClient.get('/events/my_events/');
-      // Handle both paginated and non-paginated responses
-      if (response.data.results) {
-        return response.data.results;
-      }
-      return response.data;
+      return this.parseEventList(response.data);
     } catch (error) {
       return handleAPIError(error);
     }
