@@ -43,8 +43,6 @@ tables in `csesa`, deleting existing accounts and content. It does not run seeds
 Recreate the admin account or apply your chosen seed afterwards. The import
 requires this new schema. Do not source it against data you intend to keep.
 
-
-
 ## Updating the hosted database
 
 Merging to main does not apply SQL migrations automatically. Back up the hosted
