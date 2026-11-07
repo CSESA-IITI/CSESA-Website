@@ -9,6 +9,8 @@ export interface User {
   role_title?: string;
   domain: string;
   year: string;
+  academic_year?: number | null;
+  all_domains?: string[];
   bio: string;
   image_url: string;
   skills: { name: string }[];

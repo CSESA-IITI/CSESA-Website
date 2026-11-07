@@ -1,3 +1,4 @@
+import ImportMembersModal from "../components/ImportMembersModal";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
@@ -23,6 +24,7 @@ const Profile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -63,7 +65,7 @@ const Profile: React.FC = () => {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -278,7 +280,7 @@ const Profile: React.FC = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mb-8"
+            className="mb-8 flex justify-between flex-wrap gap-3"
           >
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -288,6 +290,14 @@ const Profile: React.FC = () => {
             >
               <span>+</span>
               Create New User
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsImportOpen(true)}
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-full font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-blue-500/25"
+            >
+              Import members
             </motion.button>
           </motion.div>
         )}
@@ -358,9 +368,9 @@ const Profile: React.FC = () => {
 
                   <div className="space-y-1 text-center">
                     <p className="text-gray-300 text-sm">{user.email}</p>
-                    {user.year && (
+                    {(user.year || user.academic_year) && (
                       <p className="text-gray-400 text-sm">
-                        Class of {user.year}
+                        {user.year ? `Class of ${user.year}` : `Year ${user.academic_year}`}
                       </p>
                     )}
                     {user.bio && (
@@ -609,7 +619,7 @@ const Profile: React.FC = () => {
                     </label>
                     <input
                       type="text"
-                      value={user?.year || "Not assigned"}
+                      value={user?.year || (user?.academic_year ? `Year ${user.academic_year}` : "Not assigned")}
                       disabled={true}
                       className="w-full p-3 rounded-lg bg-gray-800/30 backdrop-blur-sm text-gray-400 border border-gray-600/30 cursor-not-allowed"
                     />
@@ -770,7 +780,7 @@ const Profile: React.FC = () => {
                           <div className="flex flex-wrap gap-2">
                             {availableSkills
                               .filter(
-                                (skill) => !userSkills.includes(skill.name)
+                                (skill) => !userSkills.includes(skill.name),
                               )
                               .slice(0, 10)
                               .map((skill, index) => (
@@ -798,6 +808,9 @@ const Profile: React.FC = () => {
       </div>
 
       {/* Create User Modal */}
+      {canCreateUsers && isImportOpen && (
+        <ImportMembersModal onClose={() => setIsImportOpen(false)} />
+      )}
       <CreateUserModal
         isOpen={isCreateUserModalOpen}
         onClose={() => setIsCreateUserModalOpen(false)}

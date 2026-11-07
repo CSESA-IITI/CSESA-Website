@@ -230,8 +230,8 @@ const Team = () => {
                         {member.domain.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </p>
                     )}
-                    {member.year && (
-                      <p className="text-gray-400 text-sm mb-4 alegreya-sans-sc-regular">Class of {member.year}</p>
+                    {(member.year || member.academic_year) && (
+                      <p className="text-gray-400 text-sm mb-4 alegreya-sans-sc-regular">{member.year ? `Class of ${member.year}` : `Year ${member.academic_year}`}</p>
                     )}
                     <div></div>
 
@@ -327,8 +327,8 @@ const Team = () => {
                       {selectedMember.domain.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </p>
                   )}
-                  {selectedMember.year && (
-                    <p className="text-gray-400 mb-4">Class of {selectedMember.year}</p>
+                  {(selectedMember.year || selectedMember.academic_year) && (
+                    <p className="text-gray-400 mb-4">{selectedMember.year ? `Class of ${selectedMember.year}` : `Year ${selectedMember.academic_year}`}</p>
                   )}
 
                   {selectedMember.bio && (
